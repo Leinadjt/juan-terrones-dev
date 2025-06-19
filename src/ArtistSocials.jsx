@@ -112,46 +112,54 @@ export default function ArtistSocials() {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-gray-800 to-indigo-900 animate-none overflow-x-hidden" style={{backgroundSize:'400% 400%', animation:'gradientShift 15s ease infinite'}}>
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-gray-800 to-indigo-900 animate-none overflow-x-hidden" style={{backgroundSize:'400% 400%', animation:'gradientShift 15s ease infinite'}}>
       {/* Floating elements */}
       <div ref={floatingRef} className="fixed inset-0 pointer-events-none z-0" />
-      <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-xl rounded-3xl p-2 md:p-10 shadow-2xl border border-white/20 text-center overflow-hidden">
-        {/* Avatar */}
-        <div className="relative flex justify-center mb-6">
-          <div
-            ref={avatarRef}
-            onClick={handleAvatarClick}
-            className="relative w-32 h-32 rounded-full border-4 border-white/30 shadow-lg flex items-center justify-center text-6xl cursor-pointer bg-gradient-to-tr from-blue-700 via-gray-700 to-indigo-800 animate-none"
-            style={{backgroundSize:'300% 300%', animation:'gradientShift 8s ease infinite'}}
-          >
-            <img
-              src={profileImg}
-              alt="Juan Terrones"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-        </div>
-        {/* Nombre y bio */}
-        <h1 className="text-3xl font-bold text-white mb-2 drop-shadow animate-pulse">Juan Terrones</h1>
-        <p className="text-white/90 text-base mb-6">Desarrollador Full Stack | Especialista en Tecnología</p>
-        {/* Social links */}
-        <div className="flex flex-col gap-3 mb-6">
-          {socials.map((s, i) => (
-            <a
-              key={s.name}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-3 px-5 py-3 bg-white/20 border border-white/30 rounded-xl text-white font-medium text-lg transition-all duration-200 hover:bg-white/30 ${s.color} relative overflow-hidden`}
+      
+      {/* Contenido principal centrado */}
+      <div className="flex-grow flex items-center justify-center px-4 py-10">
+        <div className="relative z-10 max-w-md w-full bg-white/10 backdrop-blur-xl rounded-3xl p-2 md:p-10 shadow-2xl border border-white/20 text-center overflow-hidden">
+          {/* Avatar */}
+          <div className="relative flex justify-center mb-6">
+            <div
+              ref={avatarRef}
+              onClick={handleAvatarClick}
+              className="relative w-32 h-32 rounded-full border-4 border-white/30 shadow-lg flex items-center justify-center text-6xl cursor-pointer bg-gradient-to-tr from-blue-700 via-gray-700 to-indigo-800 animate-none"
+              style={{backgroundSize:'300% 300%', animation:'gradientShift 8s ease infinite'}}
             >
-              <span className="text-2xl social-icon">{s.icon}</span>
-              <span className="flex-1 text-left">{s.name}</span>
-            </a>
-          ))}
+              <img
+                src={profileImg}
+                alt="Juan Terrones"
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+          </div>
+          {/* Nombre y bio */}
+          <h1 className="text-3xl font-bold text-white mb-2 drop-shadow animate-pulse">Juan Terrones</h1>
+          <p className="text-white/90 text-base mb-6">Desarrollador Full Stack | Especialista en Tecnología</p>
+          {/* Social links */}
+          <div className="flex flex-col gap-3 mb-6">
+            {socials.map((s, i) => (
+              <a
+                key={s.name}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-3 px-5 py-3 bg-white/20 border border-white/30 rounded-xl text-white font-medium text-lg transition-all duration-200 hover:bg-white/30 ${s.color} relative overflow-hidden`}
+              >
+                <span className="text-2xl social-icon">{s.icon}</span>
+                <span className="flex-1 text-left">{s.name}</span>
+              </a>
+            ))}
+          </div>
+          <div className="text-white/80 text-sm mt-4">Sígueme en todas mis redes sociales 💫</div>
         </div>
-        <div className="text-white/80 text-sm mt-4">Sígueme en todas mis redes sociales 💫</div>
       </div>
-      <Footer />
+
+      {/* Footer a todo el ancho */}
+      <div className="w-full">
+        <Footer />
+      </div>
     </div>
   );
 }

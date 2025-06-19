@@ -45,7 +45,7 @@ export default function Header({ onShowModal }) {
         <div className="flex flex-col items-center w-full py-6 px-2">
           {/* Imagen de perfil */}
           <img
-            src="/static/media/profile.8db7b1221581181567b1.jpg"
+            src={profileImg}
             alt="Juan Terrones"
             className="w-20 h-20 md:w-36 md:h-36 rounded-full border-4 border-white shadow-lg object-cover mb-2"
           />
