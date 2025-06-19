@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/juan-terrones-dev/static/css/main.cf83d612.css",
-    "main.js": "/juan-terrones-dev/static/js/main.9de7f20c.js",
+    "main.css": "/juan-terrones-dev/static/css/main.6aa27dbb.css",
+    "main.js": "/juan-terrones-dev/static/js/main.ec5ec96c.js",
     "static/js/453.2084025e.chunk.js": "/juan-terrones-dev/static/js/453.2084025e.chunk.js",
     "static/media/familia-joven-disfrutando-de-su-viaje.jpg": "/juan-terrones-dev/static/media/familia-joven-disfrutando-de-su-viaje.0b89fee49c9c1442f057.jpg",
     "static/media/agenciadeviaje.png": "/juan-terrones-dev/static/media/agenciadeviaje.720fae815c31b0fb7f50.png",
@@ -9,12 +9,12 @@
     "static/media/socialmedia.png": "/juan-terrones-dev/static/media/socialmedia.95ebbb8673370ee8182b.png",
     "static/media/profile.jpg": "/juan-terrones-dev/static/media/profile.8db7b1221581181567b1.jpg",
     "index.html": "/juan-terrones-dev/index.html",
-    "main.cf83d612.css.map": "/juan-terrones-dev/static/css/main.cf83d612.css.map",
-    "main.9de7f20c.js.map": "/juan-terrones-dev/static/js/main.9de7f20c.js.map",
+    "main.6aa27dbb.css.map": "/juan-terrones-dev/static/css/main.6aa27dbb.css.map",
+    "main.ec5ec96c.js.map": "/juan-terrones-dev/static/js/main.ec5ec96c.js.map",
     "453.2084025e.chunk.js.map": "/juan-terrones-dev/static/js/453.2084025e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.cf83d612.css",
-    "static/js/main.9de7f20c.js"
+    "static/css/main.6aa27dbb.css",
+    "static/js/main.ec5ec96c.js"
   ]
 }
