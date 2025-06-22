@@ -15,7 +15,7 @@ const statsData = [
   { value: 15, label: 'Años de Experiencia' },
 ];
 
-export default function TransportCompany({ onShowModal }) {
+export default function TransportCompany() {
   const navigate = useNavigate();
   const floatingRef = useRef();
   const statsRef = useRef();
@@ -202,14 +202,14 @@ export default function TransportCompany({ onShowModal }) {
                 <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 text-white text-2xl mr-4">📞</div>
                 <div>
                   <h4 className="font-bold">Teléfono</h4>
-                  <p>+51 1 234-5678</p>
+                  <p>+51 977517628</p>
                 </div>
               </div>
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 text-white text-2xl mr-4">📧</div>
+              <div className="flex items-center">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 text-white text-2xl mr-4">✉️</div>
                 <div>
                   <h4 className="font-bold">Email</h4>
-                  <p>info@transcargaperu.com</p>
+                  <p>juanterrones189@gmail.com</p>
                 </div>
               </div>
               <div className="flex items-center mb-4">

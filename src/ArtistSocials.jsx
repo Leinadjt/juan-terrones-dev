@@ -2,12 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { FaInstagram, FaYoutube, FaSpotify, FaTiktok, FaTwitter, FaFacebook, FaSoundcloud, FaGlobe, FaEnvelope, FaWhatsapp } from 'react-icons/fa';
 import profileImg from './assets/profile.jpg';
 import { useNavigate } from "react-router-dom";
-import Footer from './Footer';
 
 const socials = [
   {
     name: 'Instagram',
-    href: 'https://instagram.com/juanda.t.b/',
+    href: 'https://www.instagram.com/juanda.t.b/',
     icon: <FaInstagram className="text-pink-500" />, color: 'hover:bg-pink-500/30',
   },
   {
@@ -22,7 +21,7 @@ const socials = [
   },
   {
     name: 'TikTok',
-    href: 'https://tiktok.com/@juandax19',
+    href: 'https://www.tiktok.com/@tjuanda19',
     icon: <FaTiktok className="text-black dark:text-white" />, color: 'hover:bg-black/30',
   },
   {
@@ -42,7 +41,7 @@ const socials = [
   },
   {
     name: 'Website',
-    href: 'https://juanterrones.dev',
+    href: 'https://leinadjt.github.io/juan-terrones-dev/',
     icon: <FaGlobe className="text-purple-500" />, color: 'hover:bg-purple-500/30',
   },
   {
@@ -158,7 +157,6 @@ export default function ArtistSocials() {
 
       {/* Footer a todo el ancho */}
       <div className="w-full">
-        <Footer />
       </div>
     </div>
   );
