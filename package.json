@@ -2,7 +2,7 @@
   "name": "mi-nuevo-proyecto",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Leinadjt.github.io/juan-terrones-dev",
+  "homepage": "https://leinadjt.github.io/juan-terrones-dev",
   "dependencies": {
     "@formspree/react": "^3.0.0",
     "@testing-library/dom": "^10.4.0",
