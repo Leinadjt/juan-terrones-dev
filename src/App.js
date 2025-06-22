@@ -18,7 +18,7 @@ import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/juan-terrones-dev">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
