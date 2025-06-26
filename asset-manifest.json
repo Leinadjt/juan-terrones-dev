@@ -1,28 +1,39 @@
 {
   "files": {
-    "main.css": "/juan-terrones-dev/static/css/main.941b46d4.css",
-    "main.js": "/juan-terrones-dev/static/js/main.834aef10.js",
+    "main.css": "/juan-terrones-dev/static/css/main.31924632.css",
+    "main.js": "/juan-terrones-dev/static/js/main.a77c001a.js",
     "static/js/453.2084025e.chunk.js": "/juan-terrones-dev/static/js/453.2084025e.chunk.js",
     "static/media/familia-joven-disfrutando-de-su-viaje.jpg": "/juan-terrones-dev/static/media/familia-joven-disfrutando-de-su-viaje.0b89fee49c9c1442f057.jpg",
+    "static/media/hero-logistica.png": "/juan-terrones-dev/static/media/hero-logistica.20dec7cbf7f19e0598d8.png",
+    "static/media/hero-lubricante.png": "/juan-terrones-dev/static/media/hero-lubricante.87462779f8cdb186fd69.png",
+    "static/media/hero-chef.png": "/juan-terrones-dev/static/media/hero-chef.3e17fd8a56723d951e44.png",
+    "static/media/servicio-2.png": "/juan-terrones-dev/static/media/servicio-2.3300c0fa961f1ab96f6a.png",
+    "static/media/servicio-1.png": "/juan-terrones-dev/static/media/servicio-1.50252a23770bd39af672.png",
     "static/media/restauran.png": "/juan-terrones-dev/static/media/restauran.8cb7ad28d87da149819a.png",
     "static/media/agenciadeviaje.png": "/juan-terrones-dev/static/media/agenciadeviaje.720fae815c31b0fb7f50.png",
+    "static/media/hero-lubricante1.png": "/juan-terrones-dev/static/media/hero-lubricante1.a288ecb8994e7f3f8527.png",
+    "static/media/hero-logistica1.png": "/juan-terrones-dev/static/media/hero-logistica1.7c2b76a4615503e44a80.png",
     "static/media/transporte de carga.png": "/juan-terrones-dev/static/media/transporte de carga.8357d207d2883f2c4e59.png",
+    "static/media/hero-polleria.png": "/juan-terrones-dev/static/media/hero-polleria.05aa1099a0d3121414bd.png",
     "static/media/tienda.png": "/juan-terrones-dev/static/media/tienda.09a2ce22cd436d3c1953.png",
+    "static/media/screenshot-1.jpg": "/juan-terrones-dev/static/media/screenshot-1.a1700906aa759a162c7f.jpg",
     "static/media/gestor.png": "/juan-terrones-dev/static/media/gestor.4fd305af347b836826c5.png",
     "static/media/dental.png": "/juan-terrones-dev/static/media/dental.f22ebc6bc81fb7d32247.png",
     "static/media/socialmedia.png": "/juan-terrones-dev/static/media/socialmedia.95ebbb8673370ee8182b.png",
-    "static/media/screenshot-1.jpg": "/juan-terrones-dev/static/media/screenshot-1.a1700906aa759a162c7f.jpg",
-    "static/media/profile.jpg": "/juan-terrones-dev/static/media/profile.8db7b1221581181567b1.jpg",
-    "static/media/screenshot-3.jpg": "/juan-terrones-dev/static/media/screenshot-3.befee8fd2a957649e612.jpg",
     "static/media/screenshot-2.jpg": "/juan-terrones-dev/static/media/screenshot-2.21639dbe0533fa42b44e.jpg",
+    "static/media/screenshot-3.jpg": "/juan-terrones-dev/static/media/screenshot-3.befee8fd2a957649e612.jpg",
+    "static/media/screenshot-3.png": "/juan-terrones-dev/static/media/screenshot-3.879ff1ff738bbc34dcce.png",
+    "static/media/screenshot-1.png": "/juan-terrones-dev/static/media/screenshot-1.4cc62f2a16724eda8624.png",
+    "static/media/screenshot-2.png": "/juan-terrones-dev/static/media/screenshot-2.e7158c35c83b2c25c346.png",
+    "static/media/profile.jpg": "/juan-terrones-dev/static/media/profile.8db7b1221581181567b1.jpg",
     "static/media/logo.png": "/juan-terrones-dev/static/media/logo.b9a9bc4bdbbe9f64d1e5.png",
     "index.html": "/juan-terrones-dev/index.html",
-    "main.941b46d4.css.map": "/juan-terrones-dev/static/css/main.941b46d4.css.map",
-    "main.834aef10.js.map": "/juan-terrones-dev/static/js/main.834aef10.js.map",
+    "main.31924632.css.map": "/juan-terrones-dev/static/css/main.31924632.css.map",
+    "main.a77c001a.js.map": "/juan-terrones-dev/static/js/main.a77c001a.js.map",
     "453.2084025e.chunk.js.map": "/juan-terrones-dev/static/js/453.2084025e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.941b46d4.css",
-    "static/js/main.834aef10.js"
+    "static/css/main.31924632.css",
+    "static/js/main.a77c001a.js"
   ]
 }
