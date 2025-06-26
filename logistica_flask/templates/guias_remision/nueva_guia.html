@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Guía de Remisión - Sistema de Logística{% endblock %}
+
+{% block page_title %}Nueva Guía de Remisión{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-plus"></i>
+            Registrar Nueva Guía de Remisión
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="chofer_id" class="form-label">Chofer *</label>
+                    <select class="form-select" id="chofer_id" name="chofer_id" required>
+                        <option value="">Seleccionar chofer</option>
+                        {% for chofer in choferes %}
+                        <option value="{{ chofer.id }}">{{ chofer.nombre }} {{ chofer.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="vehiculo_id" class="form-label">Vehículo *</label>
+                    <select class="form-select" id="vehiculo_id" name="vehiculo_id" required>
+                        <option value="">Seleccionar vehículo</option>
+                        {% for vehiculo in vehiculos %}
+                        <option value="{{ vehiculo.id }}">{{ vehiculo.placa }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="fecha" class="form-label">Fecha *</label>
+                    <input type="date" class="form-control" id="fecha" name="fecha" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="cliente_id" class="form-label">Cliente *</label>
+                    <select class="form-select" id="cliente_id" name="cliente_id" required>
+                        <option value="">Seleccionar cliente</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="kilometros_recorridos" class="form-label">Kilómetros Recorridos *</label>
+                    <input type="number" class="form-control" id="kilometros_recorridos" name="kilometros_recorridos" min="0" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="guia_receptor" class="form-label">Guía Receptor *</label>
+                    <input type="text" class="form-control" id="guia_receptor" name="guia_receptor" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="guia_remitente" class="form-label">Guía Remitente *</label>
+                    <input type="text" class="form-control" id="guia_remitente" name="guia_remitente" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="origen" class="form-label">Origen *</label>
+                    <input type="text" class="form-control" id="origen" name="origen" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="destino" class="form-label">Destino *</label>
+                    <input type="text" class="form-control" id="destino" name="destino" required>
+                </div>
+            </div>
+            <div class="text-end">
+                <a href="{{ url_for('guias_remision.index') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Registrar Guía</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

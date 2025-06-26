@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Factura - Sistema de Logística{% endblock %}
+
+{% block page_title %}Nueva Factura{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-plus"></i>
+            Crear Nueva Factura
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="facturaForm">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="cliente_id" class="form-label">Cliente *</label>
+                    <select class="form-select" id="cliente_id" name="cliente_id" required>
+                        <option value="">Seleccionar cliente</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">
+                            {{ cliente.nombre }} {{ cliente.apellido }} - {{ cliente.empresa or 'Particular' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="fecha_emision" class="form-label">Fecha de Emisión *</label>
+                    <input type="date" class="form-control" id="fecha_emision" name="fecha_emision" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="forma_pago" class="form-label">Forma de Pago *</label>
+                    <select class="form-select" id="forma_pago" name="forma_pago" required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Crédito">Crédito</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="moneda" class="form-label">Moneda *</label>
+                    <select class="form-select" id="moneda" name="moneda" required>
+                        <option value="SOLES">SOLES</option>
+                        <option value="DÓLARES">DÓLARES</option>
+                    </select>
+                </div>
+                <div class="col-md-9 mb-3">
+                    <label for="observaciones" class="form-label">Observaciones</label>
+                    <input type="text" class="form-control" id="observaciones" name="observaciones">
+                </div>
+            </div>
+
+            <h5>Detalle de la Factura</h5>
+            <table class="table" id="detalleTable">
+                <thead>
+                    <tr>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Descripción</th>
+                        <th>Valor Unitario</th>
+                        <th>Importe Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filas dinámicas aquí -->
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-success mb-3" id="addItemBtn"><i class="fas fa-plus"></i> Agregar Ítem</button>
+
+            <div class="row mt-4">
+                <div class="col-md-3 offset-md-6">
+                    <label>Subtotal</label>
+                    <input type="text" name="subtotal" id="subtotal" class="form-control" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label>IGV (18%)</label>
+                    <input type="text" name="igv" id="igv" class="form-control" readonly>
+                </div>
+                <div class="col-md-3 offset-md-6">
+                    <label>Total</label>
+                    <input type="text" name="total" id="total" class="form-control" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label>Monto en Letras</label>
+                    <input type="text" name="monto_letras" id="monto_letras" class="form-control" readonly>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <a href="{{ url_for('facturas.index') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Registrar Factura</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function calcularImporteTotal(row) {
+    const cantidad = parseFloat(row.querySelector('.cantidad').value) || 0;
+    const valorUnitario = parseFloat(row.querySelector('.valor_unitario').value) || 0;
+    row.querySelector('.importe_total').value = (cantidad * valorUnitario).toFixed(2);
+}
+
+function calcularTotales() {
+    let subtotal = 0;
+    document.querySelectorAll('#detalleTable tbody tr').forEach(row => {
+        subtotal += parseFloat(row.querySelector('.importe_total').value) || 0;
+    });
+    document.getElementById('subtotal').value = subtotal.toFixed(2);
+    const igv = subtotal * 0.18;
+    document.getElementById('igv').value = igv.toFixed(2);
+    const total = subtotal + igv;
+    document.getElementById('total').value = total.toFixed(2);
+    document.getElementById('monto_letras').value = numeroALetras(total);
+}
+
+function addItemRow() {
+    const tbody = document.querySelector('#detalleTable tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="number" name="cantidad[]" class="form-control cantidad" min="0" step="any" required></td>
+        <td><input type="text" name="unidad[]" class="form-control unidad" required></td>
+        <td><input type="text" name="descripcion[]" class="form-control descripcion" required></td>
+        <td><input type="number" name="valor_unitario[]" class="form-control valor_unitario" min="0" step="any" required></td>
+        <td><input type="text" name="importe_total[]" class="form-control importe_total" readonly></td>
+        <td><button type="button" class="btn btn-danger btn-sm removeItemBtn"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(row);
+
+    row.querySelector('.cantidad').addEventListener('input', function() {
+        calcularImporteTotal(row);
+        calcularTotales();
+    });
+    row.querySelector('.valor_unitario').addEventListener('input', function() {
+        calcularImporteTotal(row);
+        calcularTotales();
+    });
+    row.querySelector('.removeItemBtn').addEventListener('click', function() {
+        row.remove();
+        calcularTotales();
+    });
+}
+
+document.getElementById('addItemBtn').addEventListener('click', function() {
+    addItemRow();
+});
+
+// Agrega una fila por defecto
+addItemRow();
+
+// Función simple para convertir número a letras (solo para soles, versión básica)
+function numeroALetras(num) {
+    // Puedes reemplazar esto por una librería más completa si lo deseas
+    const unidades = ['','UNO','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE'];
+    const decenas = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+    const centenas = ['','CIEN','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+    if (num === 0) return 'CERO SOLES';
+    if (num > 999999) return 'MUY ALTO';
+    let entero = Math.floor(num);
+    let dec = Math.round((num - entero) * 100);
+    let letras = '';
+    if (entero > 999) {
+        letras += unidades[Math.floor(entero/1000)] + ' MIL ';
+        entero = entero % 1000;
+    }
+    if (entero > 99) {
+        letras += centenas[Math.floor(entero/100)] + ' ';
+        entero = entero % 100;
+    }
+    if (entero > 9) {
+        letras += decenas[Math.floor(entero/10)] + ' ';
+        entero = entero % 10;
+    }
+    if (entero > 0) {
+        letras += unidades[entero] + ' ';
+    }
+    letras += 'SOLES';
+    if (dec > 0) {
+        letras += ' CON ' + dec + '/100';
+    }
+    return letras.trim();
+}
+</script>
+{% endblock %} 

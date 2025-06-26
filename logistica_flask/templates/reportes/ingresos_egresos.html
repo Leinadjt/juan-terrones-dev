@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Ingresos y Egresos{% endblock %}
+{% block page_title %}Ingresos y Egresos{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <form class="row g-3 align-items-end" method="get">
+            <div class="col-md-4">
+                <label for="fecha_inicio" class="form-label">Desde</label>
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="fecha_fin" class="form-label">Hasta</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="alert alert-success text-center">
+                    <h5>Ingresos</h5>
+                    <span class="fs-4">S/ {{ '%.2f'|format(total_ingresos) }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="alert alert-danger text-center">
+                    <h5>Egresos</h5>
+                    <span class="fs-4">S/ {{ '%.2f'|format(total_egresos) }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="alert alert-info text-center">
+                    <h5>Ganancia Neta</h5>
+                    <span class="fs-4">S/ {{ '%.2f'|format(ganancia_neta) }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Monto (S/)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in facturas %}
+                    <tr>
+                        <td>{{ f.fecha_emision.strftime('%d/%m/%Y') }}</td>
+                        <td>Ingreso</td>
+                        <td>Factura {{ f.numero_factura }}</td>
+                        <td class="text-success">S/ {{ '%.2f'|format(f.total) }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for e in egresos %}
+                    <tr>
+                        <td>{{ e.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>Egreso ({{ e.tipo_egreso }})</td>
+                        <td>{{ e.descripcion }}</td>
+                        <td class="text-danger">S/ {{ '%.2f'|format(e.monto) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <canvas id="chartIngresosEgresos"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const facturas = {{ facturas_json|tojson }};
+const egresos = {{ egresos_json|tojson }};
+// Agrupar por fecha
+const fechasSet = new Set();
+facturas.forEach(f => fechasSet.add(f.fecha_emision.split('T')[0]));
+egresos.forEach(e => fechasSet.add(e.fecha.split('T')[0]));
+const fechas = Array.from(fechasSet).sort();
+const ingresosPorFecha = fechas.map(fecha => facturas.filter(f => f.fecha_emision.startsWith(fecha)).reduce((a,b) => a + b.total, 0));
+const egresosPorFecha = fechas.map(fecha => egresos.filter(e => e.fecha.startsWith(fecha)).reduce((a,b) => a + e.monto, 0));
+const gananciaPorFecha = fechas.map((_,i) => ingresosPorFecha[i] - egresosPorFecha[i]);
+const ctx = document.getElementById('chartIngresosEgresos').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: fechas,
+        datasets: [
+            { label: 'Ingresos', data: ingresosPorFecha, borderColor: 'green', backgroundColor: 'rgba(0,128,0,0.1)', fill: false },
+            { label: 'Egresos', data: egresosPorFecha, borderColor: 'red', backgroundColor: 'rgba(255,0,0,0.1)', fill: false },
+            { label: 'Ganancia Neta', data: gananciaPorFecha, borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.1)', fill: false }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { x: { title: { display: true, text: 'Fecha' } }, y: { title: { display: true, text: 'Soles (S/)' } } }
+    }
+});
+</script>
+{% endblock %} 

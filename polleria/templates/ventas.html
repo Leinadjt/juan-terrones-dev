@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-cash-register me-2"></i>
+            Nueva Venta
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Productos -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Productos Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Filtros -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="filtro-categoria">
+                            <option value="">Todas las categorías</option>
+                            <option value="combo">Combos</option>
+                            <option value="plato">Platos</option>
+                            <option value="bebida">Bebidas</option>
+                            <option value="postre">Postres</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="buscar-producto" placeholder="Buscar producto...">
+                    </div>
+                </div>
+                
+                <!-- Grid de productos -->
+                <div class="row" id="productos-grid">
+                    {% for producto in productos %}
+                    <div class="col-md-4 mb-3 producto-item" data-categoria="{{ producto.categoria }}" data-nombre="{{ producto.nombre.lower() }}">
+                        <div class="card h-100 producto-card" onclick="agregarAlCarrito({{ producto.id }}, '{{ producto.nombre }}', {{ producto.precio }})">
+                            <div class="card-body text-center">
+                                <div class="mb-2">
+                                    <i class="fas fa-{% if producto.categoria == 'combo' %}hamburger{% elif producto.categoria == 'plato' %}utensils{% elif producto.categoria == 'bebida' %}glass-martini{% else %}ice-cream{% endif %} fa-3x text-primary"></i>
+                                </div>
+                                <h6 class="card-title">{{ producto.nombre }}</h6>
+                                <p class="card-text text-success fw-bold">S/. {{ "%.2f"|format(producto.precio) }}</p>
+                                <small class="text-muted">{{ producto.categoria|title }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Carrito -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Carrito de Compras
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="carrito-items">
+                    <p class="text-muted text-center">No hay productos en el carrito</p>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Subtotal:</strong>
+                    <span id="subtotal">S/. 0.00</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <span id="total" class="h5 text-success">S/. 0.00</span>
+                </div>
+                
+                <!-- Tipo de venta -->
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Venta:</label>
+                    <select class="form-select" id="tipo-venta">
+                        <option value="mostrador">Mostrador</option>
+                        <option value="takeout">Take Out</option>
+                        <option value="delivery">Delivery</option>
+                    </select>
+                </div>
+                
+                <!-- Método de pago -->
+                <div class="mb-3">
+                    <label class="form-label">Método de Pago:</label>
+                    <select class="form-select" id="metodo-pago">
+                        <option value="efectivo">Efectivo</option>
+                        <option value="yape">Yape</option>
+                        <option value="tarjeta">Tarjeta</option>
+                    </select>
+                </div>
+                
+                <!-- Botones -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" onclick="procesarVenta()" id="btn-procesar" disabled>
+                        <i class="fas fa-check me-2"></i>
+                        Procesar Venta
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="limpiarCarrito()">
+                        <i class="fas fa-trash me-2"></i>
+                        Limpiar Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Venta Completada
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>La venta se ha procesado exitosamente.</p>
+                <p><strong>Total:</strong> <span id="modal-total"></span></p>
+                <p><strong>Ticket:</strong> #<span id="modal-ticket"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirTicket()">
+                    <i class="fas fa-print me-2"></i>
+                    Imprimir Ticket
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de delivery -->
+<div class="modal fade" id="modalDelivery" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-2"></i>
+                    Información de Delivery
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nombre del Cliente:</label>
+                    <input type="text" class="form-control" id="cliente-nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Dirección:</label>
+                    <textarea class="form-control" id="cliente-direccion" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teléfono:</label>
+                    <input type="tel" class="form-control" id="cliente-telefono" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hora de Entrega Estimada:</label>
+                    <input type="datetime-local" class="form-control" id="hora-entrega" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarDelivery()">
+                    <i class="fas fa-check me-2"></i>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let carrito = [];
+let ventaActual = null;
+
+// Filtros
+$('#filtro-categoria').change(function() {
+    filtrarProductos();
+});
+
+$('#buscar-producto').keyup(function() {
+    filtrarProductos();
+});
+
+function filtrarProductos() {
+    const categoria = $('#filtro-categoria').val();
+    const busqueda = $('#buscar-producto').val().toLowerCase();
+    
+    $('.producto-item').each(function() {
+        const item = $(this);
+        const itemCategoria = item.data('categoria');
+        const itemNombre = item.data('nombre');
+        
+        const cumpleCategoria = !categoria || itemCategoria === categoria;
+        const cumpleBusqueda = !busqueda || itemNombre.includes(busqueda);
+        
+        if (cumpleCategoria && cumpleBusqueda) {
+            item.show();
+        } else {
+            item.hide();
+        }
+    });
+}
+
+function agregarAlCarrito(productoId, nombre, precio) {
+    const itemExistente = carrito.find(item => item.producto_id === productoId);
+    
+    if (itemExistente) {
+        itemExistente.cantidad += 1;
+        itemExistente.subtotal = itemExistente.cantidad * itemExistente.precio;
+    } else {
+        carrito.push({
+            producto_id: productoId,
+            nombre: nombre,
+            precio: precio,
+            cantidad: 1,
+            subtotal: precio
+        });
+    }
+    
+    actualizarCarrito();
+}
+
+function actualizarCarrito() {
+    const carritoContainer = $('#carrito-items');
+    
+    if (carrito.length === 0) {
+        carritoContainer.html('<p class="text-muted text-center">No hay productos en el carrito</p>');
+        $('#btn-procesar').prop('disabled', true);
+    } else {
+        let html = '';
+        carrito.forEach((item, index) => {
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <h6 class="mb-0">${item.nombre}</h6>
+                        <small class="text-muted">S/. ${item.precio.toFixed(2)} x ${item.cantidad}</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">S/. ${item.subtotal.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        carritoContainer.html(html);
+        $('#btn-procesar').prop('disabled', false);
+    }
+    
+    const subtotal = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+    const total = subtotal;
+    
+    $('#subtotal').text(`S/. ${subtotal.toFixed(2)}`);
+    $('#total').text(`S/. ${total.toFixed(2)}`);
+}
+
+function eliminarDelCarrito(index) {
+    carrito.splice(index, 1);
+    actualizarCarrito();
+}
+
+function limpiarCarrito() {
+    carrito = [];
+    actualizarCarrito();
+}
+
+function procesarVenta() {
+    if (carrito.length === 0) {
+        Swal.fire('Carrito vacío', 'Agrega productos antes de procesar la venta.', 'warning');
+        return;
+    }
+
+    const tipoVenta = $('#tipo-venta').val();
+    
+    if (tipoVenta === 'delivery') {
+        // Calcular hora de entrega estimada (ahora + 30 mins) en zona horaria de Perú
+        const ahoraEnPeru = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Lima"}));
+        ahoraEnPeru.setMinutes(ahoraEnPeru.getMinutes() + 30);
+        
+        // Formatear para el input datetime-local (YYYY-MM-DDTHH:mm)
+        const anio = ahoraEnPeru.getFullYear();
+        const mes = String(ahoraEnPeru.getMonth() + 1).padStart(2, '0');
+        const dia = String(ahoraEnPeru.getDate()).padStart(2, '0');
+        const hora = String(ahoraEnPeru.getHours()).padStart(2, '0');
+        const minuto = String(ahoraEnPeru.getMinutes()).padStart(2, '0');
+        
+        const horaEstimadaFormateada = `${anio}-${mes}-${dia}T${hora}:${minuto}`;
+        
+        $('#hora-entrega').val(horaEstimadaFormateada);
+        $('#modalDelivery').modal('show');
+    } else {
+        // Para Mostrador y Take Out, procesar directamente
+        confirmarVenta();
+    }
+}
+
+function confirmarDelivery() {
+    const clienteNombre = $('#cliente-nombre').val();
+    const clienteDireccion = $('#cliente-direccion').val();
+    const clienteTelefono = $('#cliente-telefono').val();
+    const horaEntrega = $('#hora-entrega').val();
+    
+    if (!clienteNombre || !clienteDireccion || !clienteTelefono || !horaEntrega) {
+        alert('Por favor complete todos los campos de delivery');
+        return;
+    }
+    
+    const deliveryInfo = {
+        cliente_nombre: clienteNombre,
+        direccion: clienteDireccion,
+        telefono: clienteTelefono,
+        hora_entrega: horaEntrega
+    };
+    
+    $('#modalDelivery').modal('hide');
+    confirmarVenta(deliveryInfo);
+}
+
+function confirmarVenta(deliveryInfo = null) {
+    const tipoVenta = $('#tipo-venta').val();
+    const metodoPago = $('#metodo-pago').val();
+    const total = carrito.reduce((sum, item) => sum + item.subtotal, 0);
+    
+    const ventaData = {
+        items: carrito,
+        total: total,
+        metodo_pago: metodoPago,
+        tipo_venta: tipoVenta
+    };
+
+    // Si hay información de delivery, agregarla al payload
+    if (deliveryInfo) {
+        ventaData.delivery_info = deliveryInfo;
+    }
+    
+    $.ajax({
+        url: '/api/crear_venta',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(ventaData),
+        success: function(response) {
+            if (response.success) {
+                ventaActual = response.venta_id;
+                $('#modal-total').text(`S/. ${total.toFixed(2)}`);
+                $('#modal-ticket').text(response.venta_id);
+                $('#modalConfirmacion').modal('show');
+                
+                // Limpiar carrito
+                carrito = [];
+                actualizarCarrito();
+                
+                // Limpiar modal de delivery
+                $('#cliente-nombre').val('');
+                $('#cliente-direccion').val('');
+                $('#cliente-telefono').val('');
+                $('#hora-entrega').val('');
+            }
+        },
+        error: function() {
+            alert('Error al procesar la venta');
+        }
+    });
+}
+
+function imprimirTicket() {
+    if (ventaActual) {
+        window.open(`/api/generar_ticket/${ventaActual}`, '_blank');
+    }
+    $('#modalConfirmacion').modal('hide');
+}
+</script>
+{% endblock %} 

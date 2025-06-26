@@ -6,7 +6,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const noBackButtonPaths = ['/', '/gestor-jt/basico', '/gestor-jt/profesional', '/gestor-jt/empresarial', '/registro-cliente'];
+  const noBackButtonPaths = ['/', '/gestor-jt/basico', '/gestor-jt/profesional', '/gestor-jt/empresarial', '/registro-cliente', '/polleria/basico', '/polleria/pro', '/polleria/anual', '/lubricante/basico', '/lubricante/pro', '/lubricante/anual', '/logistica/basico', '/logistica/profesional', '/logistica/corporativo'];
 
   // Si la ruta actual está en la lista de no mostrar el botón, o no estamos en la página de inicio, muestra solo el botón de volver
   if (!noBackButtonPaths.includes(location.pathname)) {
@@ -23,8 +23,8 @@ export default function Header() {
     );
   }
 
-  // Si estamos en la página de inicio, muestra el header completo
-  if (location.pathname === '/') {
+  // Si estamos en la página de inicio o en /juan-terrones-dev, muestra el header completo
+  if (location.pathname === '/' || location.pathname === '/juan-terrones-dev') {
     return (
       <header className="relative h-[420px] flex flex-col items-center justify-center text-white">
         {/* Fondo con overlay */}

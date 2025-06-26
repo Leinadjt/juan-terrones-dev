@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Vehículo - Sistema de Logística{% endblock %}
+
+{% block page_title %}Nuevo Vehículo{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-plus"></i>
+            Registrar Nuevo Vehículo
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="placa" class="form-label">Placa *</label>
+                    <input type="text" class="form-control" id="placa" name="placa" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="marca" class="form-label">Marca *</label>
+                    <input type="text" class="form-control" id="marca" name="marca" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="modelo" class="form-label">Modelo *</label>
+                    <input type="text" class="form-control" id="modelo" name="modelo" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="año" class="form-label">Año</label>
+                    <input type="number" class="form-control" id="año" name="año" min="1900" max="2030">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="capacidad" class="form-label">Capacidad (toneladas) *</label>
+                    <input type="number" class="form-control" id="capacidad" name="capacidad" step="0.1" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Seleccionar tipo</option>
+                        <option value="Camión">Camión</option>
+                        <option value="Furgón">Furgón</option>
+                        <option value="Camioneta">Camioneta</option>
+                        <option value="Ómnibus">Ómnibus</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_adquisicion" class="form-label">Fecha de Adquisición</label>
+                    <input type="date" class="form-control" id="fecha_adquisicion" name="fecha_adquisicion">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_vencimiento_soat" class="form-label">Fecha de Vencimiento SOAT</label>
+                    <input type="date" class="form-control" id="fecha_vencimiento_soat" name="fecha_vencimiento_soat">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_vencimiento_revision" class="form-label">Fecha de Vencimiento Revisión Técnica</label>
+                    <input type="date" class="form-control" id="fecha_vencimiento_revision" name="fecha_vencimiento_revision">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="kilometraje_real" class="form-label">Kilometraje Real</label>
+                    <input type="number" class="form-control" id="kilometraje_real" name="kilometraje_real" min="0">
+                </div>
+            </div>
+            <div class="text-end">
+                <a href="{{ url_for('vehiculos.index') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar Vehículo</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

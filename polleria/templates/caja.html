@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Control de Caja - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-cash-register me-2"></i>
+            Control de Caja
+        </h1>
+    </div>
+</div>
+
+<!-- Estado de Caja -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Ventas Hoy</h6>
+                    <h3 id="ventas-hoy">S/. 0.00</h3>
+                </div>
+                <i class="fas fa-cash-register fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Egresos Hoy</h6>
+                    <h3 id="egresos-hoy">S/. 0.00</h3>
+                </div>
+                <i class="fas fa-minus-circle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Balance</h6>
+                    <h3 id="balance-hoy">S/. 0.00</h3>
+                </div>
+                <i class="fas fa-balance-scale fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Estado</h6>
+                    <h3 id="estado-caja">Cerrada</h3>
+                </div>
+                <i id="estado-caja-icon" class="fas fa-lock fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Control de Caja y Registrar Egreso (ahora combinado) -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cash-register me-2"></i>Control de Caja</h5>
+            </div>
+            <div class="card-body" id="caja-control-body">
+                <!-- Contenido dinámico aquí -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registrar Egreso -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-minus-circle me-2"></i>Registrar Egreso</h5>
+            </div>
+            <div class="card-body">
+                <form id="form-egreso" onsubmit="registrarEgreso(); return false;">
+                    <fieldset id="fieldset-egreso" disabled>
+                        <div class="mb-3">
+                            <label class="form-label">Concepto:</label>
+                            <input type="text" class="form-control" id="egreso-concepto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Monto:</label>
+                            <input type="number" class="form-control" id="egreso-monto" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Categoría:</label>
+                            <select class="form-select" id="egreso-categoria" required>
+                                <option value="compras">Compras</option>
+                                <option value="delivery">Delivery</option>
+                                <option value="gastos_operativos">Gastos Operativos</option>
+                                <option value="otros">Otros</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-2"></i>Registrar Egreso
+                        </button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Egresos -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Egresos de Hoy
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Concepto</th>
+                                <th>Categoría</th>
+                                <th>Monto</th>
+                                <th>Registrado por</th>
+                            </tr>
+                        </thead>
+                        <tbody id="egresos-tabla">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Apertura de Caja -->
+<div class="modal fade" id="modalAbrirCaja" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-unlock me-2"></i>Abrir Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Monto Inicial:</label>
+                <input type="number" class="form-control" id="monto-inicial" step="0.01" required value="100.00">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="confirmarAbrirCaja()">Abrir Caja</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cierre de Caja -->
+<div class="modal fade" id="modalCerrarCaja" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-lock me-2"></i>Cerrar Caja</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cierre-caja-resumen"></div>
+                <hr>
+                <label class="form-label fw-bold">Monto Real en Caja:</label>
+                <input type="number" class="form-control" id="monto-real-cierre" step="0.01" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarCierreCaja()">Confirmar Cierre</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    actualizarVistaCaja();
+});
+
+function actualizarVistaCaja() {
+    $.get('/api/caja/datos', function(data) {
+        // Actualizar tarjetas de estadísticas
+        $('#ventas-hoy').text(`S/. ${data.total_ventas.toFixed(2)}`);
+        $('#egresos-hoy').text(`S/. ${data.total_egresos.toFixed(2)}`);
+        
+        let balance = data.balance;
+        let balanceCard = $('#balance-hoy');
+        balanceCard.text(`S/. ${balance.toFixed(2)}`);
+        balanceCard.removeClass('text-success text-danger');
+        
+        // Actualizar estado y control de caja
+        const cajaControlBody = $('#caja-control-body');
+        const estadoCaja = $('#estado-caja');
+        const estadoCajaIcon = $('#estado-caja-icon');
+        const fieldsetEgreso = $('#fieldset-egreso');
+
+        if (data.caja_info) {
+            estadoCaja.text('Abierta');
+            estadoCajaIcon.removeClass('fa-lock').addClass('fa-unlock');
+            fieldsetEgreso.prop('disabled', false);
+            
+            cajaControlBody.html(`
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-check-circle me-2"></i>Caja Abierta</h6>
+                    <p class="mb-1"><strong>Abierta por:</strong> ${data.caja_info.usuario}</p>
+                    <p class="mb-0"><strong>Fecha:</strong> ${data.caja_info.fecha_apertura}</p>
+                    <p><strong>Monto inicial:</strong> S/. ${data.caja_info.monto_inicial.toFixed(2)}</p>
+                </div>
+                <button class="btn btn-danger w-100" onclick="abrirModalCierre()">
+                    <i class="fas fa-lock me-2"></i>Cerrar Caja
+                </button>
+            `);
+        } else {
+            estadoCaja.text('Cerrada');
+            estadoCajaIcon.removeClass('fa-unlock').addClass('fa-lock');
+            fieldsetEgreso.prop('disabled', true);
+
+            cajaControlBody.html(`
+                <div class="alert alert-secondary text-center">
+                    <p class="mb-2">La caja está actualmente cerrada.</p>
+                    <button class="btn btn-success" onclick="abrirModalApertura()">
+                        <i class="fas fa-unlock me-2"></i>Iniciar Nueva Caja
+                    </button>
+                </div>
+            `);
+        }
+
+        // Actualizar tabla de egresos
+        const egresosTabla = $('#egresos-tabla');
+        egresosTabla.empty();
+        if(data.egresos.length > 0) {
+            data.egresos.forEach(function(egreso) {
+                // Lógica de fecha revertida a simple
+                const egresoRow = `
+                    <tr>
+                        <td>${egreso.hora}</td>
+                        <td>${egreso.concepto}</td>
+                        <td>${egreso.categoria}</td>
+                        <td>S/. ${egreso.monto.toFixed(2)}</td>
+                        <td>${egreso.registrado_por}</td>
+                    </tr>`;
+                egresosTabla.append(egresoRow);
+            });
+        } else {
+            egresosTabla.append('<tr><td colspan="5" class="text-center">No hay egresos registrados hoy.</td></tr>');
+        }
+    }).fail(function() {
+        $('#egresos-tabla').html('<tr><td colspan="5" class="text-center text-danger">Error al cargar egresos.</td></tr>');
+    });
+}
+
+function registrarEgreso() {
+    const concepto = $('#egreso-concepto').val();
+    const monto = $('#egreso-monto').val();
+    const categoria = $('#egreso-categoria').val();
+
+    if (!concepto || !monto) {
+        alert('Por favor, complete el concepto y el monto del egreso.');
+        return;
+    }
+
+    $.ajax({
+        url: '/api/caja/registrar-egreso',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ concepto: concepto, monto: monto, categoria: categoria }),
+        success: function(response) {
+            if (response.success) {
+                $('#egreso-concepto').val('');
+                $('#egreso-monto').val('');
+                actualizarVistaCaja(); // Actualización instantánea
+            } else {
+                alert('Error: ' + response.message);
+            }
+        },
+        error: function() {
+            alert('Error de conexión al registrar el egreso.');
+        }
+    });
+}
+
+function abrirModalApertura() {
+    new bootstrap.Modal(document.getElementById('modalAbrirCaja')).show();
+}
+
+function confirmarAbrirCaja() {
+    const montoInicial = $('#monto-inicial').val();
+    $.ajax({
+        url: '/api/abrir_caja',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ monto_inicial: montoInicial }),
+        success: function(response) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAbrirCaja')).hide();
+            actualizarVistaCaja();
+        },
+        error: function(xhr) { alert(xhr.responseJSON.message); }
+    });
+}
+
+function abrirModalCierre() {
+    $.get('/api/caja/datos', function(data) {
+        const esperado = data.balance;
+        $('#cierre-caja-resumen').html(`
+            <p><strong>Monto Inicial:</strong> S/. ${data.caja_info.monto_inicial.toFixed(2)}</p>
+            <p><strong>Ventas del Turno:</strong> S/. ${data.total_ventas.toFixed(2)}</p>
+            <p><strong>Egresos del Turno:</strong> S/. ${data.total_egresos.toFixed(2)}</p>
+            <hr>
+            <p class="fw-bold">Monto Esperado: <span class="text-primary">S/. ${esperado.toFixed(2)}</span></p>
+        `);
+        new bootstrap.Modal(document.getElementById('modalCerrarCaja')).show();
+    });
+}
+
+function confirmarCierreCaja() {
+    const montoFinalReal = $('#monto-real-cierre').val();
+    if (!montoFinalReal) {
+        alert('Ingrese el monto real en caja.');
+        return;
+    }
+    $.ajax({
+        url: '/api/caja/cerrar',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ monto_final_real: montoFinalReal }),
+        success: function(response) {
+            bootstrap.Modal.getInstance(document.getElementById('modalCerrarCaja')).hide();
+            alert('Caja cerrada exitosamente.');
+            actualizarVistaCaja();
+        },
+        error: function(xhr) { alert(xhr.responseJSON.message); }
+    });
+}
+</script>
+{% endblock %} 

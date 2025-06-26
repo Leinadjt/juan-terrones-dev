@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Ganancia Neta Mensual{% endblock %}
+{% block page_title %}Ganancia Neta Mensual{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <form class="row g-3 align-items-end" method="get">
+            <div class="col-md-4">
+                <label for="anio" class="form-label">Año</label>
+                <input type="number" class="form-control" id="anio" name="anio" min="2000" max="2100" value="{{ anio or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="mes" class="form-label">Mes</label>
+                <select class="form-select" id="mes" name="mes">
+                    <option value="">Todos</option>
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if mes == m %}selected{% endif %}>{{ ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][m-1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Ingresos (S/)</th>
+                        <th>Egresos (S/)</th>
+                        <th>Ganancia Neta (S/)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in datos %}
+                    <tr>
+                        <td>{{ ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"][d.mes-1] }}</td>
+                        <td>S/ {{ '%.2f'|format(d.ingresos) }}</td>
+                        <td>S/ {{ '%.2f'|format(d.egresos) }}</td>
+                        <td><strong>S/ {{ '%.2f'|format(d.ganancia_neta) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <canvas id="chartGananciaNeta"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const datos = {{ datos|tojson }};
+const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const labels = datos.map(d => meses[d.mes-1]);
+const ingresos = datos.map(d => d.ingresos);
+const egresos = datos.map(d => d.egresos);
+const ganancia = datos.map(d => d.ganancia_neta);
+const ctx = document.getElementById('chartGananciaNeta').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Ingresos', data: ingresos, borderColor: 'green', backgroundColor: 'rgba(0,128,0,0.1)', fill: false },
+            { label: 'Egresos', data: egresos, borderColor: 'red', backgroundColor: 'rgba(255,0,0,0.1)', fill: false },
+            { label: 'Ganancia Neta', data: ganancia, borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.1)', fill: false }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { x: { title: { display: true, text: 'Mes' } }, y: { title: { display: true, text: 'Soles (S/)' } } }
+    }
+});
+</script>
+{% endblock %} 

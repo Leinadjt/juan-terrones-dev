@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Guías - Sistema de Logística{% endblock %}
+
+{% block page_title %}Gestión de Guías{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('guias.nuevo_guia') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Nuevo Guía
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-map-marked-alt"></i>
+            Lista de Guías
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if guias %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>DNI</th>
+                        <th>Especialidad</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Idiomas</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guia in guias %}
+                    <tr>
+                        <td><strong>{{ guia.nombre }} {{ guia.apellido }}</strong></td>
+                        <td>{{ guia.dni }}</td>
+                        <td>{{ guia.especialidad or 'N/A' }}</td>
+                        <td>{{ guia.telefono or 'N/A' }}</td>
+                        <td>{{ guia.email or 'N/A' }}</td>
+                        <td>{{ guia.idiomas or 'N/A' }}</td>
+                        <td>
+                            {% if guia.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No hay guías registrados</p>
+            <a href="{{ url_for('guias.nuevo_guia') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Registrar Primer Guía
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

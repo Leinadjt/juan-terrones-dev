@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Perfil - Sistema de Logística{% endblock %}
+
+{% block page_title %}Editar Perfil{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-edit"></i>
+            Editar Información Personal
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="nombre" class="form-label">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ current_user.nombre }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="apellido" class="form-label">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" name="apellido" value="{{ current_user.apellido }}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="username" class="form-label">Usuario</label>
+                    <input type="text" class="form-control" id="username" value="{{ current_user.username }}" readonly>
+                    <small class="text-muted">El nombre de usuario no se puede cambiar</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Nueva Contraseña (opcional)</label>
+                <input type="password" class="form-control" id="password" name="password" minlength="6">
+                <small class="text-muted">Deja en blanco para mantener la contraseña actual</small>
+            </div>
+            <div class="text-end">
+                <a href="{{ url_for('perfil.index') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

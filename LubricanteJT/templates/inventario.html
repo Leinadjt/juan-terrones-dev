@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Lubricante JT{% endblock %}
+{% block page_title %}Gestión de Inventario{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoProductoModal">
+    <i class="fas fa-plus me-1"></i> Nuevo Producto
+</button>
+<button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#ajustarStockModal">
+    <i class="fas fa-edit me-1"></i> Ajustar Stock
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-boxes me-2"></i>
+                    Control de Inventario
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="inventario-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Tipo</th>
+                                <th>Viscosidad</th>
+                                <th>Presentación</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Precio Compra</th>
+                                <th>Precio Venta</th>
+                                <th>Proveedor</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Producto -->
+<div class="modal fade" id="nuevoProductoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Nuevo Producto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productoForm">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre del Producto</label>
+                            <input type="text" class="form-control" id="productoNombre" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="productoTipo" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="aceite">Aceite</option>
+                                <option value="filtro">Filtro</option>
+                                <option value="liquido">Líquido</option>
+                                <option value="accesorio">Accesorio</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Viscosidad</label>
+                            <input type="text" class="form-control" id="productoViscosidad" placeholder="ej: 10W-40, 5W-30">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Presentación</label>
+                            <input type="text" class="form-control" id="productoPresentacion" placeholder="ej: 1L, 4L, 1 unidad">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="productoProveedor">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Stock Inicial</label>
+                            <input type="number" class="form-control" id="productoStock" min="0" step="0.1" value="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Stock Mínimo</label>
+                            <input type="number" class="form-control" id="productoStockMinimo" min="0" step="0.1" value="5">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Precio de Compra</label>
+                            <input type="number" class="form-control" id="productoPrecioCompra" min="0" step="0.01" value="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Precio de Venta</label>
+                            <input type="number" class="form-control" id="productoPrecioVenta" min="0" step="0.01" value="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarProducto">
+                    <i class="fas fa-save me-1"></i> Guardar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Producto -->
+<div class="modal fade" id="editarProductoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Producto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarProductoForm">
+                    <input type="hidden" id="editProductoId">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre del Producto</label>
+                            <input type="text" class="form-control" id="editProductoNombre" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="editProductoTipo" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="aceite">Aceite</option>
+                                <option value="filtro">Filtro</option>
+                                <option value="liquido">Líquido</option>
+                                <option value="accesorio">Accesorio</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Viscosidad</label>
+                            <input type="text" class="form-control" id="editProductoViscosidad">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Presentación</label>
+                            <input type="text" class="form-control" id="editProductoPresentacion">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="editProductoProveedor">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Stock Actual</label>
+                            <input type="number" class="form-control" id="editProductoStock" min="0" step="0.1" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Stock Mínimo</label>
+                            <input type="number" class="form-control" id="editProductoStockMinimo" min="0" step="0.1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Precio de Compra</label>
+                            <input type="number" class="form-control" id="editProductoPrecioCompra" min="0" step="0.01">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Precio de Venta</label>
+                            <input type="number" class="form-control" id="editProductoPrecioVenta" min="0" step="0.01">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="actualizarProducto">
+                    <i class="fas fa-save me-1"></i> Actualizar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajustar Stock -->
+<div class="modal fade" id="ajustarStockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Ajustar Stock
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ajustarStockForm">
+                    <div class="mb-3">
+                        <label class="form-label">Producto</label>
+                        <select class="form-select" id="ajustarProductoId" required>
+                            <option value="">Seleccionar producto...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Stock Actual</label>
+                        <input type="text" class="form-control" id="stockActual" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo Stock</label>
+                        <input type="number" class="form-control" id="nuevoStock" min="0" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Motivo del Ajuste</label>
+                        <textarea class="form-control" id="motivoAjuste" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="guardarAjuste">
+                    <i class="fas fa-save me-1"></i> Guardar Ajuste
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Historial de Movimientos -->
+<div class="modal fade" id="historialMovimientosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-history me-2"></i>
+                    Historial de Movimientos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm" id="movimientos-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Stock Anterior</th>
+                                <th>Stock Nuevo</th>
+                                <th>Motivo</th>
+                                <th>Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    cargarInventario();
+    
+    $('#guardarProducto').click(function() {
+        guardarProducto();
+    });
+    
+    $('#actualizarProducto').click(function() {
+        actualizarProducto();
+    });
+    
+    $('#guardarAjuste').click(function() {
+        guardarAjuste();
+    });
+    
+    $('#ajustarProductoId').change(function() {
+        const productoId = $(this).val();
+        if (productoId) {
+            const producto = productos.find(p => p.id == productoId);
+            if (producto) {
+                $('#stockActual').val(producto.stock_actual);
+                $('#nuevoStock').val(producto.stock_actual);
+            }
+        }
+    });
+});
+
+let productos = [];
+
+function cargarInventario() {
+    $.get('/api/inventario', function(data) {
+        productos = data;
+        const tbody = $('#inventario-table tbody');
+        tbody.empty();
+        
+        data.forEach(function(producto) {
+            const estadoClass = producto.alerta ? 'danger' : 'success';
+            const estadoText = producto.alerta ? 'Stock Bajo' : 'Normal';
+            
+            tbody.append(`
+                <tr>
+                    <td><strong>${producto.nombre}</strong></td>
+                    <td><span class="badge bg-info">${producto.tipo}</span></td>
+                    <td>${producto.viscosidad || 'N/A'}</td>
+                    <td>${producto.presentacion}</td>
+                    <td>
+                        <span class="badge bg-${estadoClass}">${producto.stock_actual}</span>
+                    </td>
+                    <td>${producto.stock_minimo}</td>
+                    <td>S/ ${producto.precio_compra.toFixed(2)}</td>
+                    <td>S/ ${producto.precio_venta.toFixed(2)}</td>
+                    <td>${producto.proveedor || 'N/A'}</td>
+                    <td>
+                        <span class="badge bg-${estadoClass}">${estadoText}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="editarProducto(${producto.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="verMovimientos(${producto.id})">
+                            <i class="fas fa-history"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+        
+        // Actualizar opciones del modal de ajuste
+        const options = data.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+        $('#ajustarProductoId').html('<option value="">Seleccionar producto...</option>' + options);
+    });
+}
+
+function guardarProducto() {
+    const productoData = {
+        nombre: $('#productoNombre').val(),
+        tipo: $('#productoTipo').val(),
+        viscosidad: $('#productoViscosidad').val(),
+        presentacion: $('#productoPresentacion').val(),
+        stock_actual: parseFloat($('#productoStock').val()) || 0,
+        stock_minimo: parseFloat($('#productoStockMinimo').val()) || 5,
+        precio_compra: parseFloat($('#productoPrecioCompra').val()) || 0,
+        precio_venta: parseFloat($('#productoPrecioVenta').val()) || 0,
+        proveedor: $('#productoProveedor').val()
+    };
+    
+    $.ajax({
+        url: '/api/inventario',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(productoData),
+        success: function(response) {
+            if (response.success) {
+                alert('Producto guardado exitosamente!');
+                $('#nuevoProductoModal').modal('hide');
+                $('#productoForm')[0].reset();
+                cargarInventario();
+            }
+        },
+        error: function() {
+            alert('Error al guardar el producto');
+        }
+    });
+}
+
+function editarProducto(productoId) {
+    const producto = productos.find(p => p.id == productoId);
+    if (producto) {
+        $('#editProductoId').val(producto.id);
+        $('#editProductoNombre').val(producto.nombre);
+        $('#editProductoTipo').val(producto.tipo);
+        $('#editProductoViscosidad').val(producto.viscosidad);
+        $('#editProductoPresentacion').val(producto.presentacion);
+        $('#editProductoStock').val(producto.stock_actual);
+        $('#editProductoStockMinimo').val(producto.stock_minimo);
+        $('#editProductoPrecioCompra').val(producto.precio_compra);
+        $('#editProductoPrecioVenta').val(producto.precio_venta);
+        $('#editProductoProveedor').val(producto.proveedor);
+        
+        $('#editarProductoModal').modal('show');
+    }
+}
+
+function actualizarProducto() {
+    const productoId = $('#editProductoId').val();
+    const productoData = {
+        nombre: $('#editProductoNombre').val(),
+        tipo: $('#editProductoTipo').val(),
+        viscosidad: $('#editProductoViscosidad').val(),
+        presentacion: $('#editProductoPresentacion').val(),
+        stock_minimo: parseFloat($('#editProductoStockMinimo').val()) || 5,
+        precio_compra: parseFloat($('#editProductoPrecioCompra').val()) || 0,
+        precio_venta: parseFloat($('#editProductoPrecioVenta').val()) || 0,
+        proveedor: $('#editProductoProveedor').val()
+    };
+    
+    $.ajax({
+        url: `/api/inventario/${productoId}`,
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(productoData),
+        success: function(response) {
+            if (response.success) {
+                alert('Producto actualizado exitosamente!');
+                $('#editarProductoModal').modal('hide');
+                cargarInventario();
+            }
+        },
+        error: function() {
+            alert('Error al actualizar el producto');
+        }
+    });
+}
+
+function guardarAjuste() {
+    const productoId = $('#ajustarProductoId').val();
+    const nuevoStock = parseFloat($('#nuevoStock').val());
+    const motivo = $('#motivoAjuste').val();
+    
+    if (!productoId || !motivo) {
+        alert('Complete todos los campos');
+        return;
+    }
+    
+    const ajusteData = {
+        producto_id: parseInt(productoId),
+        nuevo_stock: nuevoStock
+    };
+    
+    $.ajax({
+        url: '/api/inventario/ajustar',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(ajusteData),
+        success: function(response) {
+            if (response.success) {
+                alert('Stock ajustado exitosamente!');
+                $('#ajustarStockModal').modal('hide');
+                $('#ajustarStockForm')[0].reset();
+                cargarInventario();
+            }
+        },
+        error: function() {
+            alert('Error al ajustar el stock');
+        }
+    });
+}
+
+function verMovimientos(productoId) {
+    // Aquí se implementaría la lógica para mostrar el historial de movimientos
+    $('#historialMovimientosModal').modal('show');
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Sistema de Logística{% endblock %}
+
+{% block page_title %}Reportes y Análisis{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="fas fa-balance-scale"></i> Ingresos y Egresos</h5>
+                    <p class="card-text">Consulta y compara los ingresos y egresos de la empresa en un periodo.</p>
+                </div>
+                <a href="{{ url_for('reportes.ingresos_egresos') }}" class="btn btn-primary mt-3">Ver Reporte</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="fas fa-truck"></i> Uso de Unidades</h5>
+                    <p class="card-text">Analiza el uso de los vehículos y su desempeño por fechas y clientes.</p>
+                </div>
+                <a href="{{ url_for('reportes.uso_unidades') }}" class="btn btn-primary mt-3">Ver Reporte</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="fas fa-users"></i> Clientes Frecuentes</h5>
+                    <p class="card-text">Descubre con qué clientes se ha trabajado más y el monto facturado.</p>
+                </div>
+                <a href="{{ url_for('reportes.clientes_frecuentes') }}" class="btn btn-primary mt-3">Ver Reporte</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="card-title"><i class="fas fa-coins"></i> Ganancia Neta Mensual</h5>
+                    <p class="card-text">Evalúa la ganancia neta de la empresa mes a mes.</p>
+                </div>
+                <a href="{{ url_for('reportes.ganancia_neta') }}" class="btn btn-primary mt-3">Ver Reporte</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

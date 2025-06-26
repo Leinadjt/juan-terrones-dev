@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Logística{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+{% if alertas_km %}
+<div class="alert alert-warning">
+    <ul class="mb-0">
+        {% for alerta in alertas_km.values() %}
+        <li>{{ alerta }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<div class="row">
+    <!-- Estadísticas -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="mb-0">{{ total_clientes }}</h4>
+                    <p class="mb-0">Clientes Activos</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="mb-0">{{ total_vehiculos }}</h4>
+                    <p class="mb-0">Vehículos Activos</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="mb-0">{{ total_choferes }}</h4>
+                    <p class="mb-0">Choferes Activos</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="mb-0">{{ total_rutas }}</h4>
+                    <p class="mb-0">Rutas Activas</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-route"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Facturas del día -->
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i>
+                    Resumen del Día
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h3 class="text-primary">{{ facturas_hoy }}</h3>
+                            <p class="text-muted">Facturas Hoy</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-warning">{{ vehiculos_mantenimiento }}</h3>
+                        <p class="text-muted">En Mantenimiento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Acciones rápidas -->
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt"></i>
+                    Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-2">
+                        <a href="{{ url_for('facturas.nueva_factura') }}" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-plus"></i> Nueva Factura
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{{ url_for('clientes.nuevo_cliente') }}" class="btn btn-success btn-sm w-100">
+                            <i class="fas fa-user-plus"></i> Nuevo Cliente
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{{ url_for('rutas.nueva_ruta') }}" class="btn btn-info btn-sm w-100">
+                            <i class="fas fa-route"></i> Nueva Ruta
+                        </a>
+                    </div>
+                    <div class="col-6 mb-2">
+                        <a href="{{ url_for('vehiculos.nuevo_vehiculo') }}" class="btn btn-warning btn-sm w-100">
+                            <i class="fas fa-truck"></i> Nuevo Vehículo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facturas recientes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Facturas Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if facturas_recientes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Ruta</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas_recientes %}
+                            <tr>
+                                <td>
+                                    <strong>{{ factura.numero_factura }}</strong>
+                                </td>
+                                <td>{{ factura.cliente.nombre }} {{ factura.cliente.apellido }}</td>
+                                <td>{{ factura.ruta.nombre }}</td>
+                                <td>{{ factura.fecha_emision.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        S/ {{ "%.2f"|format(factura.total) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if factura.estado == 'pagada' %}
+                                        <span class="badge bg-success">Pagada</span>
+                                    {% elif factura.estado == 'pendiente' %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Anulada</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay facturas recientes</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

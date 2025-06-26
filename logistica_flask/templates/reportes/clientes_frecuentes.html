@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Clientes Frecuentes{% endblock %}
+{% block page_title %}Clientes Más Frecuentes{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <form class="row g-3 align-items-end" method="get">
+            <div class="col-md-6">
+                <label for="fecha_inicio" class="form-label">Desde</label>
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+            </div>
+            <div class="col-md-6">
+                <label for="fecha_fin" class="form-label">Hasta</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Servicios</th>
+                        <th>Monto Facturado (S/)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in ranking %}
+                    <tr>
+                        <td>{{ r.cliente.nombre }} {{ r.cliente.apellido }}</td>
+                        <td>{{ r.servicios }}</td>
+                        <td>S/ {{ '%.2f'|format(r.monto) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <canvas id="chartClientes"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ranking = {{ ranking_json|tojson }};
+const labels = ranking.map(r => r.cliente.nombre + ' ' + r.cliente.apellido);
+const montos = ranking.map(r => r.monto);
+const ctx = document.getElementById('chartClientes').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Monto Facturado (S/)', data: montos, backgroundColor: 'rgba(75, 192, 192, 0.7)' }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { x: { title: { display: true, text: 'Cliente' } }, y: { title: { display: true, text: 'Soles (S/)' } } }
+    }
+});
+</script>
+{% endblock %} 

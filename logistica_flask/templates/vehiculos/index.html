@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Vehículos - Sistema de Logística{% endblock %}
+
+{% block page_title %}Gestión de Vehículos{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('vehiculos.nuevo_vehiculo') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Nuevo Vehículo
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-truck"></i>
+            Lista de Vehículos
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if alertas_km %}
+        <div class="alert alert-warning">
+            <ul class="mb-0">
+                {% for alerta in alertas_km.values() %}
+                <li>{{ alerta }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if vehiculos %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año</th>
+                        <th>Capacidad</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Fecha Adquisición</th>
+                        <th>Fecha SOAT</th>
+                        <th>Fecha Revisión</th>
+                        <th>Kilometraje</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehiculo in vehiculos %}
+                    <tr>
+                        <td>
+                            <strong>{{ vehiculo.placa }}</strong>
+                        </td>
+                        <td>{{ vehiculo.marca }}</td>
+                        <td>{{ vehiculo.modelo }}</td>
+                        <td>{{ vehiculo.año or 'N/A' }}</td>
+                        <td>{{ vehiculo.capacidad }} ton</td>
+                        <td>{{ vehiculo.tipo or 'N/A' }}</td>
+                        <td>
+                            {% if vehiculo.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif vehiculo.estado == 'mantenimiento' %}
+                                <span class="badge bg-warning">Mantenimiento</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ vehiculo.fecha_adquisicion.strftime('%d/%m/%Y') if vehiculo.fecha_adquisicion else 'N/A' }}</td>
+                        <td>{{ vehiculo.fecha_vencimiento_soat.strftime('%d/%m/%Y') if vehiculo.fecha_vencimiento_soat else 'N/A' }}</td>
+                        <td>{{ vehiculo.fecha_vencimiento_revision.strftime('%d/%m/%Y') if vehiculo.fecha_vencimiento_revision else 'N/A' }}</td>
+                        <td>{{ vehiculo.kilometraje_real if vehiculo.kilometraje_real is not none else 'N/A' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('vehiculos.editar_vehiculo', vehiculo_id=vehiculo.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% if alertas_km.get(vehiculo.id) %}
+                                <form method="POST" action="{{ url_for('vehiculos.reiniciar_alerta', vehiculo_id=vehiculo.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Reiniciar alerta de mantenimiento">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No hay vehículos registrados</p>
+            <a href="{{ url_for('vehiculos.nuevo_vehiculo') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Registrar Primer Vehículo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

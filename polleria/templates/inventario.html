@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-boxes me-2"></i>
+            Control de Inventario
+        </h1>
+    </div>
+</div>
+
+<!-- Alertas de Stock -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Alertas de Stock Bajo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="alertas-stock">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Control de Inventario -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Inventario de Insumos
+                </h5>
+                <button class="btn btn-primary" onclick="agregarInsumo()">
+                    <i class="fas fa-plus me-2"></i>
+                    Agregar Insumo
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Unidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventario-table-body">
+                            {% if not insumos %}
+                            <tr id="no-insumos-row">
+                                <td colspan="7" class="text-center text-muted">No hay insumos registrados.</td>
+                            </tr>
+                            {% endif %}
+                            {% for insumo in insumos %}
+                            <tr data-insumo-id="{{ insumo.id }}">
+                                <td><strong>{{ insumo.nombre }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if insumo.stock_actual <= insumo.stock_minimo %}danger{% elif insumo.stock_actual <= insumo.stock_minimo * 1.5 %}warning{% else %}success{% endif %}">
+                                        {{ "%.2f"|format(insumo.stock_actual) }} {{ insumo.unidad }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.2f"|format(insumo.stock_minimo) }} {{ insumo.unidad }}</td>
+                                <td>{{ insumo.unidad }}</td>
+                                <td>S/. {{ "%.2f"|format(insumo.precio_unitario) }}</td>
+                                <td>
+                                    {% if insumo.stock_actual <= insumo.stock_minimo %}
+                                        <span class="badge bg-danger">Stock Bajo</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Stock OK</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="abrirModalEditar({{ insumo.id }}, '{{ insumo.nombre }}', {{ insumo.stock_actual }})"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="verMovimientos({{ insumo.id }}, '{{ insumo.nombre }}')"><i class="fas fa-history"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Stock -->
+<div class="modal fade" id="modalEditarStock" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Stock
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Insumo:</label>
+                    <input type="text" class="form-control" id="insumo-nombre" readonly>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Nuevo Stock:</label>
+                    <input type="number" class="form-control" id="nuevo-stock" step="0.01" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Concepto del Ajuste:</label>
+                    <textarea class="form-control" id="concepto-ajuste" rows="3" placeholder="Ej: Ajuste de inventario, pérdida por caducidad, etc." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarStock()">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Movimientos -->
+<div class="modal fade" id="modalMovimientos" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-history me-2"></i>
+                    Movimientos de <span id="movimientos-insumo-nombre"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Cantidad</th>
+                                <th>Concepto</th>
+                                <th>Stock Resultante</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movimientos-tabla">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Agregar Insumo -->
+<div class="modal fade" id="modalAgregarInsumo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Agregar Nuevo Insumo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nuevo-insumo">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Insumo:</label>
+                        <input type="text" class="form-control" id="nuevo-insumo-nombre" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Unidad de Medida:</label>
+                        <select class="form-select" id="nuevo-insumo-unidad" required>
+                            <option value="">Seleccionar unidad</option>
+                            <option value="kg">Kilogramos (kg)</option>
+                            <option value="unidades">Unidades</option>
+                            <option value="litros">Litros</option>
+                            <option value="gramos">Gramos (g)</option>
+                            <option value="mililitros">Mililitros (ml)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Stock Inicial:</label>
+                        <input type="number" class="form-control" id="nuevo-insumo-stock" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Stock Mínimo:</label>
+                        <input type="number" class="form-control" id="nuevo-insumo-stock-minimo" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Precio Unitario:</label>
+                        <input type="number" class="form-control" id="nuevo-insumo-precio" step="0.01" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarNuevoInsumo()">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let insumoEditId = null;
+
+$(document).ready(function() {
+    cargarAlertasStock();
+});
+
+function cargarAlertasStock() {
+    $.get('/api/alertas-stock', function(data) {
+        let html = '';
+        if (data.length > 0) {
+            data.forEach(function(alerta) {
+                html += `
+                    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${alerta.nombre}</strong> - Stock bajo: ${alerta.stock_actual} ${alerta.unidad}
+                            <br><small>Stock mínimo: ${alerta.stock_minimo} ${alerta.unidad}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light" onclick="abrirModalEditar(${alerta.id}, '${alerta.nombre}', ${alerta.stock_actual})">
+                            <i class="fas fa-edit me-1"></i> Ajustar
+                        </button>
+                    </div>
+                `;
+            });
+        } else {
+            html = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>No hay alertas de stock bajo</div>';
+        }
+        $('#alertas-stock').html(html);
+    }).fail(function() {
+        $('#alertas-stock').html('<div class="alert alert-warning">Error al cargar alertas</div>');
+    });
+}
+
+function abrirModalEditar(insumoId, nombre, stockActual) {
+    insumoEditId = insumoId;
+    $('#insumo-nombre').val(nombre);
+    $('#nuevo-stock').val(stockActual);
+    $('#concepto-ajuste').val('');
+    $('#modalEditarStock').modal('show');
+}
+
+function guardarStock() {
+    const nuevoStock = parseFloat($('#nuevo-stock').val());
+    const concepto = $('#concepto-ajuste').val();
+    
+    if (!nuevoStock || !concepto) {
+        alert('Por favor complete todos los campos');
+        return;
+    }
+    
+    $.ajax({
+        url: '/api/actualizar_stock',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            insumo_id: insumoEditId,
+            nuevo_stock: nuevoStock,
+            concepto: concepto
+        }),
+        success: function(response) {
+            if (response.success) {
+                $('#modalEditarStock').modal('hide');
+                location.reload();
+            }
+        },
+        error: function() {
+            alert('Error al actualizar el stock');
+        }
+    });
+}
+
+function verMovimientos(insumoId, nombre) {
+    $('#movimientos-insumo-nombre').text(nombre);
+    
+    $.get(`/api/movimientos-insumo/${insumoId}`, function(data) {
+        let html = '';
+        if (data.length > 0) {
+            data.forEach(function(movimiento) {
+                html += `
+                    <tr>
+                        <td>${movimiento.fecha}</td>
+                        <td>
+                            <span class="badge bg-${movimiento.tipo === 'entrada' ? 'success' : 'danger'}">
+                                ${movimiento.tipo === 'entrada' ? 'Entrada' : 'Salida'}
+                            </span>
+                        </td>
+                        <td>${movimiento.cantidad} ${movimiento.unidad}</td>
+                        <td>${movimiento.concepto}</td>
+                        <td>${movimiento.stock_resultante} ${movimiento.unidad}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html = '<tr><td colspan="5" class="text-center text-muted">No hay movimientos registrados</td></tr>';
+        }
+        $('#movimientos-tabla').html(html);
+        $('#modalMovimientos').modal('show');
+    }).fail(function() {
+        $('#movimientos-tabla').html('<tr><td colspan="5" class="text-center text-muted">Error al cargar movimientos</td></tr>');
+        $('#modalMovimientos').modal('show');
+    });
+}
+
+function agregarInsumo() {
+    $('#form-nuevo-insumo')[0].reset();
+    $('#modalAgregarInsumo').modal('show');
+}
+
+function guardarNuevoInsumo() {
+    const nombre = $('#nuevo-insumo-nombre').val().trim();
+    const unidad = $('#nuevo-insumo-unidad').val();
+    const stockInicialStr = $('#nuevo-insumo-stock').val();
+    const stockMinimoStr = $('#nuevo-insumo-stock-minimo').val();
+    const precioUnitarioStr = $('#nuevo-insumo-precio').val();
+
+    if (!nombre || !unidad || stockInicialStr === '' || stockMinimoStr === '' || precioUnitarioStr === '') {
+        Swal.fire('Campos Incompletos', 'Por favor, rellena todos los campos.', 'warning');
+        return;
+    }
+
+    const insumoData = {
+        nombre: nombre,
+        unidad: unidad,
+        stock_actual: parseFloat(stockInicialStr),
+        stock_minimo: parseFloat(stockMinimoStr),
+        precio_unitario: parseFloat(precioUnitarioStr)
+    };
+
+    $.ajax({
+        url: '/api/agregar-insumo',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(insumoData),
+        success: function(response) {
+            if (response.success) {
+                $('#modalAgregarInsumo').modal('hide');
+                agregarFilaInsumo(response.insumo);
+                Swal.fire('¡Éxito!', 'El nuevo insumo ha sido agregado.', 'success');
+            } else {
+                Swal.fire('Error', response.message || 'No se pudo agregar el insumo.', 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+        }
+    });
+}
+
+function agregarFilaInsumo(insumo) {
+    $('#no-insumos-row').remove();
+
+    let stockClass = 'bg-success';
+    let stockText = 'Stock OK';
+    if (insumo.stock_actual <= insumo.stock_minimo) {
+        stockClass = 'bg-danger';
+        stockText = 'Stock Bajo';
+    }
+
+    const nuevaFila = `
+        <tr data-insumo-id="${insumo.id}">
+            <td><strong>${insumo.nombre}</strong></td>
+            <td><span class="badge ${stockClass}">${parseFloat(insumo.stock_actual).toFixed(2)} ${insumo.unidad}</span></td>
+            <td>${parseFloat(insumo.stock_minimo).toFixed(2)} ${insumo.unidad}</td>
+            <td>${insumo.unidad}</td>
+            <td>S/. ${parseFloat(insumo.precio_unitario).toFixed(2)}</td>
+            <td><span class="badge ${stockClass}">${stockText}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="abrirModalEditar(${insumo.id}, '${insumo.nombre}', ${insumo.stock_actual})"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-outline-info" onclick="verMovimientos(${insumo.id}, '${insumo.nombre}')"><i class="fas fa-history"></i></button>
+            </td>
+        </tr>
+    `;
+    $('#inventario-table-body').append(nuevaFila);
+}
+</script>
+{% endblock %} 

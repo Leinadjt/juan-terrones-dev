@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Servicios - Lubricante JT{% endblock %}
+{% block page_title %}Gestión de Servicios{% endblock %}
+
+{% block page_actions %}
+<!-- Botón eliminado por requerimiento del usuario -->
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    Historial de Servicios
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="servicios-table">
+                        <thead>
+                            <tr>
+                                <th>Placa</th>
+                                <th>Cliente</th>
+                                <th>Tipo Servicio</th>
+                                <th>Kilometraje</th>
+                                <th>Fecha</th>
+                                <th>Próximo</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Servicio -->
+<div class="modal fade" id="nuevoServicioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-tools me-2"></i>
+                    Nuevo Servicio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="servicioForm">
+                    <!-- Datos del Cliente -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user me-1"></i>
+                                Datos del Cliente
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" class="form-control" id="clienteNombre" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Celular</label>
+                            <input type="text" class="form-control" id="clienteCelular" required>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Vehículo -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-car me-1"></i>
+                                Datos del Vehículo
+                            </h6>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Placa</label>
+                            <input type="text" class="form-control" id="vehiculoPlaca" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="vehiculoTipo" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="auto">Auto</option>
+                                <option value="camion">Camión</option>
+                                <option value="moto">Moto</option>
+                                <option value="camioneta">Camioneta</option>
+                                <option value="bus">Bus</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="vehiculoMarca" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="vehiculoModelo" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Año</label>
+                            <input type="number" class="form-control" id="vehiculoAño" min="1900" max="2030" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kilometraje Actual</label>
+                            <input type="number" class="form-control" id="kilometrajeActual" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Próximo Cambio (km)</label>
+                            <input type="number" class="form-control" id="kilometrajeProximo" required>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Servicio -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-wrench me-1"></i>
+                                Datos del Servicio
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select class="form-select" id="tipoServicio" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Cambio de Aceite">Cambio de Aceite</option>
+                                <option value="Cambio de Filtro de Aceite">Cambio de Filtro de Aceite</option>
+                                <option value="Cambio de Filtro de Aire">Cambio de Filtro de Aire</option>
+                                <option value="Cambio de Filtro de Combustible">Cambio de Filtro de Combustible</option>
+                                <option value="Cambio de Aceite de Transmisión">Cambio de Aceite de Transmisión</option>
+                                <option value="Lavado de Motor">Lavado de Motor</option>
+                                <option value="Servicio Completo">Servicio Completo</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Método de Pago</label>
+                            <select class="form-select" id="metodoPago" required>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="yape">Yape</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Productos del Servicio -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-boxes me-1"></i>
+                                Productos Utilizados
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div id="productosContainer">
+                                <div class="row producto-item mb-2">
+                                    <div class="col-md-4">
+                                        <select class="form-select producto-select" required>
+                                            <option value="">Seleccionar producto...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control cantidad-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control precio-input" placeholder="Precio (con IGV)" min="0" step="0.01" required>
+                                        <small class="form-text text-muted">Precio (con IGV)</small>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" class="form-control subtotal-input" placeholder="Subtotal" readonly>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger btn-sm eliminar-producto">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="agregarProducto">
+                                <i class="fas fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Subtotal:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="subtotal">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>IGV (18%):</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="igv">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Total:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="total" class="h5 text-primary">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarServicio">
+                    <i class="fas fa-save me-1"></i> Guardar Servicio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalles -->
+<div class="modal fade" id="detallesServicioModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Detalles del Servicio
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detallesServicioBody">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    cargarServicios();
+    cargarProductos();
+    
+    // Eventos para productos
+    $(document).on('change', '.producto-select', function() {
+        const productoId = $(this).val();
+        const row = $(this).closest('.producto-item');
+        
+        if (productoId) {
+            const producto = productos.find(p => p.id == productoId);
+            if (producto) {
+                row.find('.precio-input').val(producto.precio_venta);
+                calcularSubtotal(row);
+            }
+        }
+    });
+    
+    $(document).on('input', '.cantidad-input, .precio-input', function() {
+        calcularSubtotal($(this).closest('.producto-item'));
+    });
+    
+    $('#agregarProducto').click(function() {
+        agregarFilaProducto();
+    });
+    
+    $(document).on('click', '.eliminar-producto', function() {
+        $(this).closest('.producto-item').remove();
+        calcularTotales();
+    });
+    
+    $('#guardarServicio').click(function() {
+        guardarServicio();
+    });
+});
+
+let productos = [];
+
+function cargarServicios() {
+    $.get('/api/servicios', function(data) {
+        const tbody = $('#servicios-table tbody');
+        tbody.empty();
+        
+        data.forEach(function(servicio) {
+            tbody.append(`
+                <tr>
+                    <td><strong>${servicio.placa}</strong></td>
+                    <td>${servicio.cliente}</td>
+                    <td>${servicio.tipo_servicio}</td>
+                    <td>${servicio.kilometraje_actual} km</td>
+                    <td>${servicio.fecha_servicio}</td>
+                    <td>${servicio.fecha_proximo || 'N/A'}</td>
+                    <td><span class="badge bg-success">S/ ${servicio.total.toFixed(2)}</span></td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="verDetalles(${servicio.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    });
+}
+
+function cargarProductos() {
+    $.get('/api/inventario', function(data) {
+        productos = data;
+        const options = data.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+        
+        $('.producto-select').each(function() {
+            $(this).html('<option value="">Seleccionar producto...</option>' + options);
+        });
+    });
+}
+
+function agregarFilaProducto() {
+    const options = productos.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+    
+    const nuevaFila = `
+        <div class="row producto-item mb-2">
+            <div class="col-md-4">
+                <select class="form-select producto-select" required>
+                    <option value="">Seleccionar producto...</option>
+                    ${options}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control cantidad-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control precio-input" placeholder="Precio (con IGV)" min="0" step="0.01" required>
+                <small class="form-text text-muted">Precio (con IGV)</small>
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control subtotal-input" placeholder="Subtotal" readonly>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm eliminar-producto">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    $('#productosContainer').append(nuevaFila);
+}
+
+function calcularSubtotal(row) {
+    const cantidad = parseFloat(row.find('.cantidad-input').val()) || 0;
+    const precio = parseFloat(row.find('.precio-input').val()) || 0;
+    const subtotal = cantidad * precio;
+    
+    row.find('.subtotal-input').val(subtotal.toFixed(2));
+    calcularTotales();
+}
+
+function calcularTotales() {
+    let total = 0;
+    
+    $('.subtotal-input').each(function() {
+        total += parseFloat($(this).val()) || 0;
+    });
+    
+    const subtotal = total / 1.18;
+    const igv = total - subtotal;
+    
+    $('#subtotal').text(`S/ ${subtotal.toFixed(2)}`);
+    $('#igv').text(`S/ ${igv.toFixed(2)}`);
+    $('#total').text(`S/ ${total.toFixed(2)}`);
+}
+
+function guardarServicio() {
+    const productos = [];
+    let subtotal = 0;
+    
+    $('.producto-item').each(function() {
+        const productoId = $(this).find('.producto-select').val();
+        const cantidad = parseFloat($(this).find('.cantidad-input').val()) || 0;
+        const precio = parseFloat($(this).find('.precio-input').val()) || 0;
+        
+        if (productoId && cantidad > 0 && precio > 0) {
+            productos.push({
+                producto_id: parseInt(productoId),
+                cantidad: cantidad,
+                precio_unitario: precio
+            });
+            subtotal += cantidad * precio;
+        }
+    });
+    
+    if (productos.length === 0) {
+        alert('Debe agregar al menos un producto');
+        return;
+    }
+    
+    const servicioData = {
+        cliente: {
+            nombre: $('#clienteNombre').val(),
+            celular: $('#clienteCelular').val()
+        },
+        vehiculo: {
+            placa: $('#vehiculoPlaca').val(),
+            tipo: $('#vehiculoTipo').val(),
+            marca: $('#vehiculoMarca').val(),
+            modelo: $('#vehiculoModelo').val(),
+            año: parseInt($('#vehiculoAño').val()),
+            kilometraje: parseInt($('#kilometrajeActual').val())
+        },
+        tipo_servicio: $('#tipoServicio').val(),
+        kilometraje_actual: parseInt($('#kilometrajeActual').val()),
+        kilometraje_proximo: parseInt($('#kilometrajeProximo').val()),
+        observaciones: $('#observaciones').val(),
+        metodo_pago: $('#metodoPago').val(),
+        detalles: productos
+    };
+    
+    $.ajax({
+        url: '/api/servicios',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(servicioData),
+        success: function(response) {
+            if (response.success) {
+                alert(`Servicio registrado exitosamente!\nTicket: ${response.ticket}`);
+                $('#nuevoServicioModal').modal('hide');
+                $('#servicioForm')[0].reset();
+                $('#productosContainer').html('');
+                agregarFilaProducto();
+                cargarServicios();
+            }
+        },
+        error: function() {
+            alert('Error al registrar el servicio');
+        }
+    });
+}
+
+function verDetalles(servicioId) {
+    // Aquí se implementaría la lógica para mostrar detalles del servicio
+    $('#detallesServicioModal').modal('show');
+}
+</script>
+{% endblock %} 

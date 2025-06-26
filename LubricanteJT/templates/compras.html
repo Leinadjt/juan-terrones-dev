@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Compras - Lubricante JT{% endblock %}
+{% block page_title %}Gestión de Compras{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevaCompraModal">
+    <i class="fas fa-plus me-1"></i> Nueva Compra
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-truck me-2"></i>
+                    Historial de Compras
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="compras-table">
+                        <thead>
+                            <tr>
+                                <th>Factura</th>
+                                <th>Proveedor</th>
+                                <th>RUC</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Compra -->
+<div class="modal fade" id="nuevaCompraModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Nueva Compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="compraForm">
+                    <!-- Datos del Proveedor -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-building me-1"></i>
+                                Datos del Proveedor
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Proveedor</label>
+                            <input type="text" class="form-control" id="proveedorNombre" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">RUC</label>
+                            <input type="text" class="form-control" id="proveedorRuc">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Número de Factura</label>
+                            <input type="text" class="form-control" id="numeroFactura">
+                        </div>
+                    </div>
+
+                    <!-- Productos -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-boxes me-1"></i>
+                                Productos Comprados
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div id="productosCompraContainer">
+                                <div class="row producto-compra-item mb-2">
+                                    <div class="col-md-4">
+                                        <select class="form-select producto-compra-select" required>
+                                            <option value="">Seleccionar producto...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control cantidad-compra-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control precio-compra-input" placeholder="Precio Unit." min="0" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" class="form-control subtotal-compra-input" placeholder="Subtotal" readonly>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger btn-sm eliminar-producto-compra">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="agregarProductoCompra">
+                                <i class="fas fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Totales -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Total:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="total-compra" class="h5 text-primary">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observacionesCompra" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarCompra">
+                    <i class="fas fa-save me-1"></i> Guardar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalles de Compra -->
+<div class="modal fade" id="detallesCompraModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Detalles de Compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detallesCompraBody">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    cargarCompras();
+    cargarProductos();
+    
+    // Eventos para productos de compra
+    $(document).on('change', '.producto-compra-select', function() {
+        const productoId = $(this).val();
+        const row = $(this).closest('.producto-compra-item');
+        
+        if (productoId) {
+            const producto = productos.find(p => p.id == productoId);
+            if (producto) {
+                row.find('.precio-compra-input').val(producto.precio_compra);
+                calcularSubtotalCompra(row);
+            }
+        }
+    });
+    
+    $(document).on('input', '.cantidad-compra-input, .precio-compra-input', function() {
+        calcularSubtotalCompra($(this).closest('.producto-compra-item'));
+    });
+    
+    $('#agregarProductoCompra').click(function() {
+        agregarFilaProductoCompra();
+    });
+    
+    $(document).on('click', '.eliminar-producto-compra', function() {
+        $(this).closest('.producto-compra-item').remove();
+        calcularTotalesCompra();
+    });
+    
+    $('#guardarCompra').click(function() {
+        guardarCompra();
+    });
+});
+
+let productos = [];
+
+function cargarCompras() {
+    $.get('/api/compras', function(data) {
+        const tbody = $('#compras-table tbody');
+        tbody.empty();
+        
+        data.forEach(function(compra) {
+            tbody.append(`
+                <tr>
+                    <td><strong>${compra.numero_factura || 'N/A'}</strong></td>
+                    <td>${compra.proveedor}</td>
+                    <td>${compra.ruc || 'N/A'}</td>
+                    <td><span class="badge bg-success">S/ ${compra.total.toFixed(2)}</span></td>
+                    <td>${compra.fecha_compra}</td>
+                    <td>${compra.usuario}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="verDetallesCompra(${compra.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    });
+}
+
+function cargarProductos() {
+    $.get('/api/inventario', function(data) {
+        productos = data;
+        const options = data.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+        
+        $('.producto-compra-select').each(function() {
+            $(this).html('<option value="">Seleccionar producto...</option>' + options);
+        });
+    });
+}
+
+function agregarFilaProductoCompra() {
+    const options = productos.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+    
+    const nuevaFila = `
+        <div class="row producto-compra-item mb-2">
+            <div class="col-md-4">
+                <select class="form-select producto-compra-select" required>
+                    <option value="">Seleccionar producto...</option>
+                    ${options}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control cantidad-compra-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control precio-compra-input" placeholder="Precio Unit." min="0" step="0.01" required>
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control subtotal-compra-input" placeholder="Subtotal" readonly>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm eliminar-producto-compra">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    $('#productosCompraContainer').append(nuevaFila);
+}
+
+function calcularSubtotalCompra(row) {
+    const cantidad = parseFloat(row.find('.cantidad-compra-input').val()) || 0;
+    const precio = parseFloat(row.find('.precio-compra-input').val()) || 0;
+    const subtotal = cantidad * precio;
+    
+    row.find('.subtotal-compra-input').val(subtotal.toFixed(2));
+    calcularTotalesCompra();
+}
+
+function calcularTotalesCompra() {
+    let subtotal = 0;
+    
+    $('.subtotal-compra-input').each(function() {
+        subtotal += parseFloat($(this).val()) || 0;
+    });
+    
+    const total = subtotal;
+    
+    $('#total-compra').text(`S/ ${total.toFixed(2)}`);
+}
+
+function guardarCompra() {
+    const productos = [];
+    let subtotal = 0;
+    
+    $('.producto-compra-item').each(function() {
+        const productoId = $(this).find('.producto-compra-select').val();
+        const cantidad = parseFloat($(this).find('.cantidad-compra-input').val()) || 0;
+        const precio = parseFloat($(this).find('.precio-compra-input').val()) || 0;
+        
+        if (productoId && cantidad > 0 && precio > 0) {
+            productos.push({
+                producto_id: parseInt(productoId),
+                cantidad: cantidad,
+                precio_unitario: precio
+            });
+            subtotal += cantidad * precio;
+        }
+    });
+    
+    if (productos.length === 0) {
+        alert('Debe agregar al menos un producto');
+        return;
+    }
+    
+    const compraData = {
+        proveedor: $('#proveedorNombre').val(),
+        ruc: $('#proveedorRuc').val(),
+        numero_factura: $('#numeroFactura').val(),
+        subtotal: subtotal,
+        total: subtotal,
+        detalles: productos
+    };
+    
+    $.ajax({
+        url: '/api/compras',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(compraData),
+        success: function(response) {
+            if (response.success) {
+                alert('Compra registrada exitosamente!');
+                $('#nuevaCompraModal').modal('hide');
+                $('#compraForm')[0].reset();
+                $('#productosCompraContainer').html('');
+                agregarFilaProductoCompra();
+                cargarCompras();
+            }
+        },
+        error: function() {
+            alert('Error al registrar la compra');
+        }
+    });
+}
+
+function verDetallesCompra(compraId) {
+    // Aquí se implementaría la lógica para mostrar detalles de la compra
+    $('#detallesCompraModal').modal('show');
+}
+</script>
+{% endblock %} 

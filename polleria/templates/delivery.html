@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Delivery - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-truck me-2"></i>
+            Gestión de Delivery
+        </h1>
+    </div>
+</div>
+
+<!-- Estadísticas de Delivery -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Pendientes</h6>
+                    <h3 id="deliveries-pendientes">{{ pendientes|length }}</h3>
+                </div>
+                <i class="fas fa-clock fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">En Camino</h6>
+                    <h3 id="deliveries-en-camino">{{ en_camino|length }}</h3>
+                </div>
+                <i class="fas fa-truck fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Entregados Hoy</h6>
+                    <h3 id="deliveries-entregados">0</h3>
+                </div>
+                <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Tiempo Promedio</h6>
+                    <h3 id="tiempo-promedio-delivery">25 min</h3>
+                </div>
+                <i class="fas fa-stopwatch fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Deliveries Pendientes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-clock me-2"></i>Deliveries Pendientes</h5></div>
+            <div class="card-body" id="pendientes-container">
+                {% if pendientes %}
+                    {% for delivery in pendientes %}
+                        <div class="card delivery-card mb-3 border-warning" data-id="{{ delivery.id }}">
+                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Pedido #{{ delivery.venta_id }}</h6>
+                                <span class="fw-bold">{{ delivery.cliente_nombre }}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><i class="fas fa-map-marker-alt fa-fw me-2"></i>{{ delivery.direccion }}</p>
+                                <p class="mb-2"><i class="fas fa-phone fa-fw me-2"></i>{{ delivery.telefono }}</p>
+                                <p class="mb-2 text-muted small"><i class="fas fa-clock fa-fw me-2"></i>Pedido: {{ delivery.hora_pedido | peru_time }} | Entrega: {{ delivery.hora_entrega_estimada.strftime('%H:%M') }}</p>
+                                <hr>
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-light me-2" onclick="verDetalleDelivery({{ delivery.id }})">Ver Detalle</button>
+                                    <button class="btn btn-sm btn-warning" onclick="marcarEnCamino({{ delivery.id }}, this)">En Camino</button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">No hay deliveries pendientes.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deliveries en Camino -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-truck me-2"></i>En Camino</h5></div>
+            <div class="card-body" id="en-camino-container">
+                {% if en_camino %}
+                    {% for delivery in en_camino %}
+                        <div class="card delivery-card mb-3 border-danger" data-id="{{ delivery.id }}">
+                            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Pedido #{{ delivery.venta_id }}</h6>
+                                 <span class="fw-bold">{{ delivery.cliente_nombre }}</span>
+                            </div>
+                            <div class="card-body">
+                                 <p class="mb-1"><i class="fas fa-map-marker-alt fa-fw me-2"></i>{{ delivery.direccion }}</p>
+                                 <p class="mb-2"><i class="fas fa-phone fa-fw me-2"></i>{{ delivery.telefono }}</p>
+                                 <p class="mb-2 text-muted small"><i class="fas fa-clock fa-fw me-2"></i>Pedido: {{ delivery.hora_pedido | peru_time }} | Entrega: {{ delivery.hora_entrega_estimada.strftime('%H:%M') }}</p>
+                                 <hr>
+                                 <div class="d-flex justify-content-end">
+                                     <button class="btn btn-sm btn-light me-2" onclick="verDetalleDelivery({{ delivery.id }})">Ver Detalle</button>
+                                     <button class="btn btn-sm btn-success" onclick="marcarEntregado({{ delivery.id }}, this)">Marcar Entregado</button>
+                                 </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">No hay deliveries en camino.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Deliveries -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Historial de Deliveries
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Cliente</th>
+                                <th>Dirección</th>
+                                <th>Teléfono</th>
+                                <th>Hora Pedido</th>
+                                <th>Hora Entrega</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-deliveries-body">
+                            {% if historial %}
+                                {% for delivery in historial %}
+                                <tr data-id="{{ delivery.id }}">
+                                    <td>{{ delivery.venta_id }}</td>
+                                    <td>{{ delivery.cliente_nombre }}</td>
+                                    <td>{{ delivery.direccion }}</td>
+                                    <td>{{ delivery.telefono }}</td>
+                                    <td>{{ delivery.hora_pedido | peru_time }}</td>
+                                    <td>{{ delivery.hora_entrega_estimada.strftime('%H:%M') }}</td>
+                                    <td>
+                                        {% if delivery.estado == 'entregado' %}
+                                            <span class="badge bg-success">Entregado</span>
+                                        {% elif delivery.estado == 'en_camino' %}
+                                            <span class="badge bg-danger">En Camino</span>
+                                        {% elif delivery.estado == 'pendiente' %}
+                                            <span class="badge bg-warning text-dark">Pendiente</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ delivery.estado | title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><button class="btn btn-sm btn-info text-white" onclick="verDetalleDelivery({{ delivery.id }})">Ver Detalle</button></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="8" class="text-center text-muted">No hay historial de deliveries.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalle de Delivery -->
+<div class="modal fade" id="modalDetalleDelivery" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-2"></i>
+                    Detalle de Delivery #<span id="modal-delivery-id"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-delivery-detalles">
+                <!-- Contenido dinámico por JS -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function marcarEnCamino(deliveryId, boton) {
+    const card = $(boton).closest('.delivery-card');
+    
+    // Deshabilitar botones para evitar doble clic
+    card.find('button').prop('disabled', true);
+
+    $.ajax({
+        url: `/api/delivery/${deliveryId}/estado`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ estado: 'en_camino' }),
+        success: function(response) {
+            if (response.success) {
+                // Crear una copia de la tarjeta para moverla
+                const cardClone = card.clone();
+                cardClone.find('button').prop('disabled', false); // Reactivar botones en el clon
+
+                // Modificar el clon para que se vea como "En Camino"
+                cardClone.removeClass('border-warning').addClass('border-danger');
+                cardClone.find('.card-header').removeClass('bg-warning text-dark').addClass('bg-danger text-white');
+                
+                const actionButton = cardClone.find('.btn-warning'); // Encuentra el botón original
+                actionButton.text('Marcar Entregado')
+                            .removeClass('btn-warning')
+                            .addClass('btn-success')
+                            .attr('onclick', `marcarEntregado(${deliveryId}, this)`);
+
+                // Animar el movimiento
+                card.fadeOut(400, function() {
+                    $(this).remove(); // Eliminar la tarjeta original
+                    
+                    // Si el contenedor "En Camino" tenía el mensaje de "vacío", quitarlo
+                    $('#en-camino-container .text-center.text-muted').remove();
+                    
+                    // Añadir el clon al nuevo contenedor
+                    cardClone.hide().prependTo('#en-camino-container').fadeIn(400);
+                    
+                    actualizarContadoresYVerificarVacio();
+                });
+
+                mostrarNotificacion(`El pedido #${response.delivery_id} está en camino.`, 'info');
+            } else {
+                mostrarNotificacion(response.message || 'Error al actualizar el estado.', 'danger');
+                card.find('button').prop('disabled', false); // Reactivar botones si hay error
+            }
+        },
+        error: function() {
+            mostrarNotificacion('Error de conexión.', 'danger');
+            card.find('button').prop('disabled', false); // Reactivar botones si hay error
+        }
+    });
+}
+
+function marcarEntregado(deliveryId, boton) {
+    const card = $(boton).closest('.delivery-card');
+    card.find('button').prop('disabled', true);
+
+    $.ajax({
+        url: `/api/delivery/${deliveryId}/estado`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ estado: 'entregado' }),
+        success: function(response) {
+            if (response.success) {
+                // Animar y eliminar la tarjeta de "En Camino"
+                card.fadeOut(400, function() {
+                    $(this).remove();
+                    actualizarContadoresYVerificarVacio();
+                });
+
+                // Actualizar la fila en la tabla de historial
+                const historyRow = $('#historial-deliveries-body tr[data-id="' + deliveryId + '"]');
+                if (historyRow.length) {
+                    const statusCell = historyRow.find('td').eq(6); // La 7a columna es el Estado
+                    statusCell.html('<span class="badge bg-success">Entregado</span>');
+                }
+
+                // Actualizar el contador de "Entregados Hoy"
+                const entregadosCounter = $('#deliveries-entregados');
+                const currentCount = parseInt(entregadosCounter.text()) || 0;
+                entregadosCounter.text(currentCount + 1);
+                
+                mostrarNotificacion(`El pedido #${response.delivery_id} fue entregado.`, 'success');
+            } else {
+                mostrarNotificacion(response.message || 'Error al actualizar.', 'danger');
+                card.find('button').prop('disabled', false);
+            }
+        },
+        error: function() {
+            mostrarNotificacion('Error de conexión.', 'danger');
+            card.find('button').prop('disabled', false);
+        }
+    });
+}
+
+function actualizarContadoresYVerificarVacio() {
+    const pendientesCount = $('#pendientes-container .delivery-card').length;
+    $('#deliveries-pendientes').text(pendientesCount);
+    if (pendientesCount === 0) {
+        $('#pendientes-container').html('<p class="text-center text-muted">No hay deliveries pendientes.</p>');
+    }
+
+    const enCaminoCount = $('#en-camino-container .delivery-card').length;
+    $('#deliveries-en-camino').text(enCaminoCount);
+    if (enCaminoCount === 0) {
+        $('#en-camino-container').html('<p class="text-center text-muted">No hay deliveries en camino.</p>');
+    }
+}
+
+function verDetalleDelivery(deliveryId) {
+    $.get(`/api/detalle-delivery/${deliveryId}`, function(data) {
+        $('#modal-delivery-id').text(data.venta_id);
+        
+        let html = `<h6>Productos del Pedido:</h6><ul>`;
+        data.productos.forEach(function(producto) {
+            html += `<li>${producto.cantidad}x ${producto.nombre}</li>`;
+        });
+        html += `</ul>`;
+        
+        $('#modal-delivery-detalles').html(html);
+        $('#modalDetalleDelivery').modal('show');
+    }).fail(function() {
+        mostrarNotificacion('No se pudo cargar el detalle.', 'danger');
+    });
+}
+
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    const notificacion = $(`<div class="alert alert-${tipo} alert-dismissible fade show position-fixed" style="top: 20px; right: 20px; z-index: 1050;">
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>`);
+    $('body').append(notificacion);
+    setTimeout(() => notificacion.fadeOut(500, () => notificacion.remove()), 5000);
+}
+
+$(document).ready(function() {
+    // Cargar estadísticas que no vienen con la carga inicial (Entregados y Tiempo Promedio)
+    $.get('/api/deliveries', function(data) {
+         $('#deliveries-entregados').text(data.stats.entregados_hoy || 0);
+         $('#tiempo-promedio-delivery').text(data.stats.tiempo_promedio || 'N/A');
+    });
+});
+</script>
+{% endblock %}

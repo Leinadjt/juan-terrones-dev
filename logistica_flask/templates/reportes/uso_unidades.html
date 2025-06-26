@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Uso de Unidades{% endblock %}
+{% block page_title %}Uso de Unidades (Vehículos){% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <form class="row g-3 align-items-end" method="get">
+            <div class="col-md-4">
+                <label for="fecha_inicio" class="form-label">Desde</label>
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="fecha_fin" class="form-label">Hasta</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin or '' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Vehículo</th>
+                        <th>Servicios</th>
+                        <th>Kilómetros Recorridos</th>
+                        <th>Clientes Atendidos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in unidades %}
+                    <tr>
+                        <td>{{ u.vehiculo.placa }} - {{ u.vehiculo.marca }} {{ u.vehiculo.modelo }}</td>
+                        <td>{{ u.servicios }}</td>
+                        <td>{{ u.km }}</td>
+                        <td>{{ u.clientes }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <canvas id="chartUnidades"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const unidades = {{ unidades_json|tojson }};
+const labels = unidades.map(u => u.vehiculo.placa + ' - ' + u.vehiculo.marca);
+const servicios = unidades.map(u => u.servicios);
+const kms = unidades.map(u => u.km);
+const ctx = document.getElementById('chartUnidades').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Servicios', data: servicios, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
+            { label: 'Km Recorridos', data: kms, backgroundColor: 'rgba(255, 206, 86, 0.7)' }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { x: { title: { display: true, text: 'Vehículo' } }, y: { title: { display: true, text: 'Cantidad' } } }
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-bar me-2"></i>
+            Reportes y Análisis
+        </h1>
+    </div>
+</div>
+
+<!-- Filtros de Fecha -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Inicio:</label>
+                        <input type="date" class="form-control" id="fecha-inicio">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Fin:</label>
+                        <input type="date" class="form-control" id="fecha-fin">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Reporte:</label>
+                        <select class="form-select" id="tipo-reporte">
+                            <option value="ventas">Reporte de Ventas</option>
+                            <option value="inventario">Reporte de Inventario</option>
+                            <option value="caja">Reporte de Caja</option>
+                            <option value="delivery">Reporte de Delivery</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button class="btn btn-primary" onclick="generarReporte()">
+                                <i class="fas fa-search me-2"></i>
+                                Generar Reporte
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Ventas Totales</h6>
+                    <h3 id="ventas-totales">S/. 0.00</h3>
+                </div>
+                <i class="fas fa-cash-register fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Total Pedidos</h6>
+                    <h3 id="total-pedidos">0</h3>
+                </div>
+                <i class="fas fa-shopping-cart fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Promedio por Pedido</h6>
+                    <h3 id="promedio-pedido">S/. 0.00</h3>
+                </div>
+                <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Deliveries</h6>
+                    <h3 id="total-deliveries">0</h3>
+                </div>
+                <i class="fas fa-truck fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Ventas por Categoría
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartCategorias" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Ventas por Día
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartVentas" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Resultados -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Resultados del Reporte
+                </h5>
+                <div>
+                    <button class="btn btn-outline-success" onclick="exportarExcel()">
+                        <i class="fas fa-file-excel me-2"></i>
+                        Exportar Excel
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="exportarPDF()">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Exportar PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="resultados-reporte">
+                    <p class="text-muted text-center">Seleccione un tipo de reporte y genere para ver los resultados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reportes Rápidos -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Reportes Rápidos
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="reporteHoy()">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Reporte de Hoy
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="reporteSemana()">
+                        <i class="fas fa-calendar-week me-2"></i>
+                        Reporte de la Semana
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="reporteMes()">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Reporte del Mes
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="stockBajo()">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Productos con Stock Bajo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>
+                    Configuración de Reportes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Exportación Automática a Google Sheets:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="auto-export">
+                        <label class="form-check-label" for="auto-export">
+                            Habilitar exportación automática
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Frecuencia de Exportación:</label>
+                    <select class="form-select" id="frecuencia-export">
+                        <option value="diario">Diario</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="mensual">Mensual</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-success" onclick="configurarExportacion()">
+                    <i class="fas fa-save me-2"></i>
+                    Guardar Configuración
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chartCategorias = null;
+let chartVentas = null;
+
+$(document).ready(function() {
+    // Establecer fechas por defecto (hoy)
+    const hoy = new Date().toISOString().split('T')[0];
+    $('#fecha-inicio').val(hoy);
+    $('#fecha-fin').val(hoy);
+    
+    // Cargar reporte inicial
+    reporteHoy();
+});
+
+function reporteHoy() {
+    const hoy = new Date().toISOString().split('T')[0];
+    generarReporte('ventas', hoy, hoy);
+}
+
+function reporteSemana() {
+    const hoy = new Date();
+    const inicioSemana = new Date(hoy.setDate(hoy.getDate() - hoy.getDay() + 1)).toISOString().split('T')[0];
+    const finSemana = new Date(hoy.setDate(hoy.getDate() + 6)).toISOString().split('T')[0];
+    generarReporte('ventas', inicioSemana, finSemana);
+}
+
+function reporteMes() {
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
+    generarReporte('ventas', inicioMes, finMes);
+}
+
+function stockBajo() {
+    generarReporte('stock_bajo');
+}
+
+function generarReporte(tipo = null, fechaInicio = null, fechaFin = null) {
+    const tipoReporte = tipo || $('#tipo-reporte').val();
+    const f_inicio = fechaInicio || $('#fecha-inicio').val();
+    const f_fin = fechaFin || $('#fecha-fin').val();
+
+    let url = `/api/reporte?tipo=${tipoReporte}`;
+    if (f_inicio) url += `&fecha_inicio=${f_inicio}`;
+    if (f_fin) url += `&fecha_fin=${f_fin}`;
+
+    // Mostrar un loader
+    $('#resultados-reporte').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+    
+    $.ajax({
+        url: url,
+        method: 'GET',
+        success: function(data) {
+            actualizarEstadisticas(data.stats);
+            actualizarGraficos(data.charts);
+            actualizarTabla(tipoReporte, data.table_data);
+        },
+        error: function() {
+            $('#resultados-reporte').html('<div class="alert alert-danger text-center"><i class="fas fa-exclamation-triangle me-2"></i>Error al generar el reporte</div>');
+        }
+    });
+}
+
+function actualizarEstadisticas(stats) {
+    $('#ventas-totales').text(`S/. ${(stats.ventas_totales || 0).toFixed(2)}`);
+    $('#total-pedidos').text(stats.total_pedidos || 0);
+    $('#promedio-pedido').text(`S/. ${(stats.promedio_pedido || 0).toFixed(2)}`);
+    $('#total-deliveries').text(stats.total_deliveries || 0);
+}
+
+function actualizarGraficos(charts) {
+    // Gráfico de categorías
+    if (chartCategorias) {
+        chartCategorias.destroy();
+    }
+    if (charts.categorias && charts.categorias.labels.length > 0) {
+        const ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
+        chartCategorias = new Chart(ctxCategorias, {
+            type: 'pie',
+            data: {
+                labels: charts.categorias.labels,
+                datasets: [{
+                    data: charts.categorias.data,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#E7E9ED', '#FC6B1E']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // Gráfico de ventas por día
+    if (chartVentas) {
+        chartVentas.destroy();
+    }
+    if (charts.ventas && charts.ventas.labels.length > 0) {
+        const ctxVentas = document.getElementById('chartVentas').getContext('2d');
+        chartVentas = new Chart(ctxVentas, {
+            type: 'line',
+            data: {
+                labels: charts.ventas.labels,
+                datasets: [{
+                    label: 'Ventas',
+                    data: charts.ventas.data,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    }
+}
+
+function actualizarTabla(tipoReporte, data) {
+    const contenedor = $('#resultados-reporte');
+    if (!data || data.length === 0) {
+        contenedor.html('<div class="alert alert-info text-center"><i class="fas fa-info-circle me-2"></i>No hay datos para mostrar en el período seleccionado.</div>');
+        return;
+    }
+
+    let headers = '';
+    let rows = '';
+
+    if (tipoReporte === 'ventas') {
+        headers = `<tr><th>Fecha</th><th>Pedido</th><th>Productos</th><th>Tipo</th><th>Método Pago</th><th>Total</th></tr>`;
+        data.forEach(v => {
+            rows += `<tr>
+                <td>${v.fecha}</td>
+                <td>#${v.id}</td>
+                <td>${v.productos}</td>
+                <td><span class="badge bg-secondary">${v.tipo}</span></td>
+                <td>${v.metodo_pago}</td>
+                <td class="text-success fw-bold">S/. ${v.total.toFixed(2)}</td>
+            </tr>`;
+        });
+    } else if (tipoReporte === 'stock_bajo') {
+        headers = `<tr><th>Insumo</th><th>Stock Actual</th><th>Stock Mínimo</th><th>Unidad</th><th>Estado</th></tr>`;
+        data.forEach(i => {
+            rows += `<tr>
+                <td>${i.nombre}</td>
+                <td>${i.stock_actual}</td>
+                <td>${i.stock_minimo}</td>
+                <td>${i.unidad}</td>
+                <td><span class="badge bg-danger">Stock Bajo</span></td>
+            </tr>`;
+        });
+    }
+    // ... (se podrían añadir más tipos de reporte aquí)
+
+    const html = `<div class="table-responsive"><table class="table table-hover"><thead>${headers}</thead><tbody>${rows}</tbody></table></div>`;
+    contenedor.html(html);
+}
+
+function exportarExcel() {
+    const fechaInicio = $('#fecha-inicio').val();
+    const fechaFin = $('#fecha-fin').val();
+    const tipoReporte = $('#tipo-reporte').val();
+    
+    window.open(`/api/exportar-excel?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo=${tipoReporte}`, '_blank');
+}
+
+function exportarPDF() {
+    const fechaInicio = $('#fecha-inicio').val();
+    const fechaFin = $('#fecha-fin').val();
+    const tipoReporte = $('#tipo-reporte').val();
+    
+    window.open(`/api/exportar-pdf?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo=${tipoReporte}`, '_blank');
+}
+
+function configurarExportacion() {
+    const autoExport = $('#auto-export').is(':checked');
+    const frecuencia = $('#frecuencia-export').val();
+
+    $.ajax({
+        url: '/api/configurar-exportacion',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            auto_export: autoExport,
+            frecuencia: frecuencia
+        }),
+        success: function(response) {
+            if (response.success) {
+                alert('Configuración guardada correctamente.');
+            } else {
+                alert('Error al guardar la configuración: ' + response.message);
+            }
+        },
+        error: function() {
+            alert('Error al guardar la configuración.');
+        }
+    });
+}
+</script>
+{% endblock %} 

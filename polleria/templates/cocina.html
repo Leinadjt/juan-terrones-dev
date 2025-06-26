@@ -1,0 +1,498 @@
+{% extends "base.html" %}
+
+{% block title %}Cocina - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-utensils me-2"></i>
+            Panel de Cocina
+        </h1>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Pendientes</h6>
+                    <h3 id="pedidos-pendientes">{{ ventas_pendientes|length }}</h3>
+                </div>
+                <i class="fas fa-clock fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">En Preparación</h6>
+                    <h3 id="en-preparacion">{{ ventas_preparacion|length }}</h3>
+                </div>
+                <i class="fas fa-fire fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Listos Hoy</h6>
+                    <h3 id="listos-hoy">0</h3>
+                </div>
+                <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">Tiempo Promedio</h6>
+                    <h3 id="tiempo-promedio">8 min</h3>
+                </div>
+                <i class="fas fa-stopwatch fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Pedidos Pendientes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Pedidos Pendientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="pedidos-pendientes-container">
+                    {% if ventas_pendientes %}
+                        {% for venta in ventas_pendientes %}
+                        <div class="pedido-card mb-3" data-venta-id="{{ venta.id }}">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Pedido #{{ venta.id }}</h6>
+                                        <span class="badge bg-dark">{{ venta.fecha | peru_time }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pedido-detalles">
+                                        {% set detalles = venta.detalles %}
+                                        {% for detalle in detalles %}
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>{{ detalle.cantidad }}x {{ detalle.nombre_producto }}</span>
+                                            <span class="text-muted">{{ detalle.categoria|title }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Total: S/. {{ "%.2f"|format(venta.total) }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ venta.tipo_venta|title }}</small>
+                                        </div>
+                                        <button class="btn btn-warning btn-sm" onclick="iniciarPreparacion({{ venta.id }})">
+                                            <i class="fas fa-fire me-1"></i>
+                                            Iniciar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p>No hay pedidos pendientes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pedidos en Preparación -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-fire me-2"></i>
+                    En Preparación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="pedidos-preparacion-container">
+                    {% if ventas_preparacion %}
+                        {% for venta in ventas_preparacion %}
+                        <div class="pedido-card mb-3" data-venta-id="{{ venta.id }}">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Pedido #{{ venta.id }}</h6>
+                                        <span class="badge bg-light text-dark" id="tiempo-{{ venta.id }}">0:00</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pedido-detalles">
+                                        {% set detalles = venta.detalles %}
+                                        {% for detalle in detalles %}
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>{{ detalle.cantidad }}x {{ detalle.nombre_producto }}</span>
+                                            <span class="text-muted">{{ detalle.categoria|title }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Total: S/. {{ "%.2f"|format(venta.total) }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ venta.tipo_venta|title }}</small>
+                                        </div>
+                                        <button class="btn btn-success btn-sm" onclick="marcarListo({{ venta.id }})">
+                                            <i class="fas fa-check me-1"></i>
+                                            Listo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-fire fa-3x mb-3"></i>
+                            <p>No hay pedidos en preparación</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pedidos Recientes Completados -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Pedidos Completados (Últimos 10)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="pedidos-completados">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalle de Pedido -->
+<div class="modal fade" id="modalDetallePedido" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-list me-2"></i>
+                    Detalle del Pedido #<span id="modal-pedido-id"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-pedido-detalles">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let timers = {};
+
+$(document).ready(function() {
+    actualizarVistaCocina();
+    setInterval(actualizarVistaCocina, 30000); // Actualizar cada 30 segundos
+});
+
+function iniciarPreparacion(ventaId) {
+    actualizarEstadoVenta(ventaId, 'en_preparacion');
+}
+
+function marcarListo(ventaId) {
+    actualizarEstadoVenta(ventaId, 'listo');
+}
+
+function actualizarEstadoVenta(ventaId, nuevoEstado) {
+    $.ajax({
+        url: '/api/actualizar_estado_venta',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ venta_id: ventaId, nuevo_estado: nuevoEstado }),
+        success: function(response) {
+            if(response.status === 'success') {
+                // Mover la tarjeta del pedido dinámicamente
+                const pedidoCard = $(`.pedido-card[data-venta-id=${ventaId}]`);
+
+                if (nuevoEstado === 'en_preparacion') {
+                    // Actualizar la tarjeta para reflejar el nuevo estado
+                    pedidoCard.find('.card').removeClass('border-warning').addClass('border-danger');
+                    pedidoCard.find('.card-header').removeClass('bg-warning').addClass('bg-danger text-white');
+                    const boton = pedidoCard.find('button');
+                    boton.text('Listo').removeClass('btn-warning').addClass('btn-success').attr('onclick', `marcarListo(${ventaId})`);
+                    boton.prepend('<i class="fas fa-check me-1"></i> ');
+                    
+                    // Añadir el timer
+                    const timerBadge = pedidoCard.find('.badge');
+                    timerBadge.attr('id', `tiempo-${ventaId}`).removeClass('bg-dark').addClass('bg-light text-dark').text('0:00');
+
+                    // Mover la tarjeta
+                    $('#pedidos-preparacion-container').prepend(pedidoCard);
+
+                } else if (nuevoEstado === 'listo') {
+                    // Eliminar la tarjeta de la vista 'en preparacion'
+                    pedidoCard.remove();
+                    // Actualizar la lista de completados (si es necesario)
+                    actualizarVistaCocina(); // Recargamos todo para mantener la simpleza por ahora
+                }
+                
+                // Actualizar contadores
+                actualizarContadores();
+                verificarContenedoresVacios();
+
+                Swal.fire('¡Éxito!', `El pedido #${ventaId} se actualizó a ${nuevoEstado.replace('_', ' ')}.`, 'success');
+            } else {
+                Swal.fire('Error', response.message, 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+        }
+    });
+}
+
+function verificarContenedoresVacios() {
+    if ($('#pedidos-pendientes-container').children('.pedido-card').length === 0) {
+        $('#pedidos-pendientes-container').html(`
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                <p>No hay pedidos pendientes</p>
+            </div>
+        `);
+    }
+     if ($('#pedidos-preparacion-container').children('.pedido-card').length === 0) {
+        $('#pedidos-preparacion-container').html(`
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-fire fa-3x mb-3"></i>
+                <p>No hay pedidos en preparación</p>
+            </div>
+        `);
+    } else {
+        // Asegurarse de que no haya mensaje de "vacío" si hay elementos
+        $('#pedidos-preparacion-container .text-center.text-muted').remove();
+    }
+}
+
+
+function actualizarContadores() {
+    const pendientes = $('#pedidos-pendientes-container').children('.pedido-card').length;
+    const enPreparacion = $('#pedidos-preparacion-container').children('.pedido-card').length;
+    
+    $('#pedidos-pendientes').text(pendientes);
+    $('#en-preparacion').text(enPreparacion);
+}
+
+function actualizarVistaCocina() {
+    $.get('/api/cocina/pedidos', function(data) {
+        // Limpiar timers existentes
+        Object.values(timers).forEach(clearInterval);
+        timers = {};
+
+        // Actualizar estadísticas
+        $('#pedidos-pendientes').text(data.stats.pendientes);
+        $('#en-preparacion').text(data.stats.en_preparacion);
+        $('#listos-hoy').text(data.stats.listos_hoy);
+
+        // Renderizar Pedidos Pendientes
+        const pendientesContainer = $('#pedidos-pendientes-container');
+        pendientesContainer.empty();
+        if (data.pendientes.length > 0) {
+            data.pendientes.forEach(v => pendientesContainer.append(crearCardPedido(v, 'pendiente')));
+        } else {
+            pendientesContainer.html('<div class="text-center text-muted py-4"><i class="fas fa-check-circle fa-3x mb-3"></i><p>No hay pedidos pendientes</p></div>');
+        }
+
+        // Renderizar Pedidos en Preparación
+        const preparacionContainer = $('#pedidos-preparacion-container');
+        preparacionContainer.empty();
+        if (data.en_preparacion.length > 0) {
+            data.en_preparacion.forEach(v => {
+                preparacionContainer.append(crearCardPedido(v, 'en_preparacion'));
+                iniciarTimer(v.id, v.fecha_iso);
+            });
+        } else {
+            preparacionContainer.html('<div class="text-center text-muted py-4"><i class="fas fa-fire fa-3x mb-3"></i><p>No hay pedidos en preparación</p></div>');
+        }
+
+        // Renderizar Pedidos Completados
+        const completadosContainer = $('#pedidos-completados');
+        completadosContainer.empty();
+        if(data.completados.length > 0) {
+            const list = $('<ul class="list-group"></ul>');
+            data.completados.forEach(v => {
+                list.append(`<li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Pedido #${v.id}: ${v.productos}</span>
+                    <span class="badge bg-success rounded-pill"><i class="fas fa-stopwatch me-1"></i>${v.tiempo_preparacion}</span>
+                </li>`);
+            });
+            completadosContainer.html(list);
+        } else {
+            completadosContainer.html('<div class="text-center text-muted py-3">No hay pedidos completados recientemente.</div>');
+        }
+    });
+}
+
+function crearCardPedido(venta, tipo) {
+    let detallesHtml = '';
+    venta.detalles.forEach(detalle => {
+        detallesHtml += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>${detalle.cantidad}x ${detalle.nombre_producto}</span>
+                <span class="text-muted">${detalle.categoria}</span>
+            </div>
+        `;
+    });
+
+    let cardClass, headerClass, badge, actionBtn;
+    if (tipo === 'pendiente') {
+        cardClass = 'border-warning';
+        headerClass = 'bg-warning text-dark';
+        if (venta.fecha_utc) {
+            const fechaPeru = new Date(venta.fecha_utc).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' });
+            badge = `<span class="badge bg-dark">${fechaPeru}</span>`;
+        } else {
+            badge = `<span class="badge bg-dark">--:--</span>`;
+        }
+        actionBtn = `<button class="btn btn-warning btn-sm" onclick="iniciarPreparacion(${venta.id})"><i class="fas fa-fire me-1"></i> Iniciar</button>`;
+    } else { // en_preparacion
+        cardClass = 'border-danger';
+        headerClass = 'bg-danger text-white';
+        badge = `<span class="badge bg-light text-dark" id="tiempo-${venta.id}">0:00</span>`;
+        actionBtn = `<button class="btn btn-success btn-sm" onclick="marcarListo(${venta.id})"><i class="fas fa-check me-1"></i> Listo</button>`;
+    }
+
+    return `<div class="pedido-card mb-3" data-venta-id="${venta.id}">
+        <div class="card ${cardClass}">
+            <div class="card-header ${headerClass}"><div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Pedido #${venta.id}</h6>${badge}</div></div>
+            <div class="card-body">
+                <div class="pedido-detalles">${detallesHtml}</div><hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><strong>Total: S/. ${venta.total.toFixed(2)}</strong><br><small class="text-muted">${venta.tipo_venta}</small></div>
+                    ${actionBtn}
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function iniciarTimer(ventaId, fechaIso) {
+    const inicio = new Date(fechaIso);
+    
+    function actualizarTiempo() {
+        const ahora = new Date();
+        const diferencia = Math.floor((ahora - inicio) / 1000 / 60); // minutos
+        const minutos = Math.floor(diferencia);
+        const segundos = Math.floor((diferencia - minutos) * 60);
+        
+        $(`#tiempo-${ventaId}`).text(`${minutos}:${segundos.toString().padStart(2, '0')}`);
+        
+        // Cambiar color si pasa mucho tiempo
+        if (diferencia > 15) {
+            $(`#tiempo-${ventaId}`).removeClass('bg-light text-dark').addClass('bg-danger text-white');
+        } else if (diferencia > 10) {
+            $(`#tiempo-${ventaId}`).removeClass('bg-light text-dark').addClass('bg-warning text-dark');
+        }
+    }
+    
+    actualizarTiempo();
+    timers[ventaId] = setInterval(actualizarTiempo, 1000);
+}
+
+function verDetallePedido(ventaId) {
+    $.get(`/api/detalle-venta/${ventaId}`, function(data) {
+        $('#modal-pedido-id').text(data.id);
+        
+        let html = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Fecha:</strong> ${data.fecha}
+                </div>
+                <div class="col-md-6">
+                    <strong>Total:</strong> S/. ${data.total.toFixed(2)}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Tipo:</strong> ${data.tipo_venta}
+                </div>
+                <div class="col-md-6">
+                    <strong>Estado:</strong> <span class="badge bg-${data.estado === 'pendiente' ? 'warning' : 'success'}">${data.estado}</span>
+                </div>
+            </div>
+            
+            <h6>Productos:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.detalles.forEach(function(detalle) {
+            html += `
+                <tr>
+                    <td>${detalle.producto_nombre}</td>
+                    <td>${detalle.cantidad}</td>
+                    <td>S/. ${detalle.precio_unitario.toFixed(2)}</td>
+                    <td>S/. ${detalle.subtotal.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        $('#modal-pedido-detalles').html(html);
+        $('#modalDetallePedido').modal('show');
+    });
+}
+</script>
+{% endblock %} 

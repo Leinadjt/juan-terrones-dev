@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil - Sistema de Logística{% endblock %}
+
+{% block page_title %}Mi Perfil{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('perfil.editar') }}" class="btn btn-primary">
+    <i class="fas fa-edit"></i> Editar Perfil
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user"></i>
+                    Información Personal
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Nombre:</label>
+                        <p>{{ current_user.nombre }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Apellido:</label>
+                        <p>{{ current_user.apellido }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Usuario:</label>
+                        <p>{{ current_user.username }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Email:</label>
+                        <p>{{ current_user.email }}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Rol:</label>
+                        <p><span class="badge bg-primary">{{ current_user.rol }}</span></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Estado:</label>
+                        <p>
+                            {% if current_user.activo %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Fecha de Registro:</label>
+                    <p>{{ current_user.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog"></i>
+                    Acciones
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('perfil.editar') }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Editar Perfil
+                    </a>
+                    <button class="btn btn-warning">
+                        <i class="fas fa-key"></i> Cambiar Contraseña
+                    </button>
+                    <button class="btn btn-info">
+                        <i class="fas fa-download"></i> Exportar Datos
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i>
+                    Estadísticas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <h3 class="text-primary">{{ current_user.facturas_creadas|length }}</h3>
+                    <p class="text-muted">Facturas Creadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

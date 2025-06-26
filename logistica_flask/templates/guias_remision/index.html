@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Guías de Remisión - Sistema de Logística{% endblock %}
+
+{% block page_title %}Guías de Remisión{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('guias_remision.nueva_guia') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Nueva Guía
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-file-alt"></i>
+            Lista de Guías de Remisión
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if guias %}
+        <form id="exportForm" method="POST" action="{{ url_for('guias_remision.exportar_excel') }}">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select_all"></th>
+                        <th>Chofer</th>
+                        <th>Vehículo</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Guía Receptor</th>
+                        <th>Guía Remitente</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Kilómetros</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guia in guias %}
+                    <tr>
+                        <td><input type="checkbox" name="guia_ids" value="{{ guia.id }}"></td>
+                        <td>{{ guia.chofer.nombre }} {{ guia.chofer.apellido }}</td>
+                        <td>{{ guia.vehiculo.placa }}</td>
+                        <td>{{ guia.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ guia.cliente.nombre }} {{ guia.cliente.apellido }}</td>
+                        <td>{{ guia.guia_receptor }}</td>
+                        <td>{{ guia.guia_remitente }}</td>
+                        <td>{{ guia.origen }}</td>
+                        <td>{{ guia.destino }}</td>
+                        <td>{{ guia.kilometros_recorridos }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-success mt-2"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+        </form>
+        <script>
+        // Seleccionar/deseleccionar todos
+        const selectAll = document.getElementById('select_all');
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                document.querySelectorAll('input[name=guia_ids]').forEach(cb => cb.checked = this.checked);
+            });
+        }
+        </script>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No hay guías de remisión registradas</p>
+            <a href="{{ url_for('guias_remision.nueva_guia') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Registrar Primera Guía
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

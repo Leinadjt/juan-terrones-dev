@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Lubricante JT{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Tarjetas de resumen -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Servicios Hoy
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="servicios-hoy">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tools fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Ventas Hoy
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="ventas-hoy">S/ 0.00</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Stock Bajo
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="stock-bajo">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Caja Estado
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="caja-estado">Cerrada</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-cash-register fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Ventas recientes -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Ventas Recientes</h6>
+                <a href="/ventas" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nueva Venta
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ventas-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas de inventario -->
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-warning">Alertas de Stock</h6>
+            </div>
+            <div class="card-body">
+                <div id="alertas-stock">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximos servicios -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">Próximos Servicios</h6>
+            </div>
+            <div class="card-body">
+                <div id="proximos-servicios">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Accesos Rápidos</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="/servicios" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-tools fa-2x mb-2"></i>
+                            <span>Nuevo Servicio</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/ventas" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <span>Nueva Venta</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/compras" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-truck fa-2x mb-2"></i>
+                            <span>Nueva Compra</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/caja" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-cash-register fa-2x mb-2"></i>
+                            <span>Gestionar Caja</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Cargar datos del dashboard
+    cargarDashboard();
+    
+    // Actualizar cada 30 segundos
+    setInterval(cargarDashboard, 30000);
+});
+
+function cargarDashboard() {
+    // Cargar ventas recientes
+    $.get('/api/ventas', function(data) {
+        const tbody = $('#ventas-table tbody');
+        tbody.empty();
+        data.slice(0, 5).forEach(function(venta) {
+            tbody.append(`
+                <tr>
+                    <td><strong>${venta.numero_ticket}</strong></td>
+                    <td>${venta.cliente}</td>
+                    <td>${venta.tipo_venta.charAt(0).toUpperCase() + venta.tipo_venta.slice(1)}</td>
+                    <td>${venta.fecha_venta}</td>
+                    <td><span class="badge bg-success">S/ ${venta.total.toFixed(2)}</span></td>
+                </tr>
+            `);
+        });
+    });
+    
+    // Cargar estado de caja
+    $.get('/api/caja/estado', function(data) {
+        if (data.abierta) {
+            $('#caja-estado').html('<span class="badge bg-success">Abierta</span>');
+        } else {
+            $('#caja-estado').html('<span class="badge bg-danger">Cerrada</span>');
+        }
+    });
+    
+    // Cargar inventario para alertas
+    $.get('/api/inventario', function(data) {
+        const alertas = data.filter(p => p.alerta);
+        $('#stock-bajo').text(alertas.length);
+        
+        const alertasHtml = alertas.map(producto => `
+            <div class="alert alert-warning alert-sm mb-2">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>${producto.nombre}</strong><br>
+                <small>Stock: ${producto.stock_actual} ${producto.presentacion}</small>
+            </div>
+        `).join('');
+        
+        $('#alertas-stock').html(alertasHtml || '<p class="text-muted">No hay alertas</p>');
+    });
+    
+    // Cargar ventas del día
+    const hoy = new Date().toISOString().split('T')[0];
+    $.get(`/api/reportes/ventas?fecha_inicio=${hoy}&fecha_fin=${hoy}`, function(data) {
+        const totalVentas = data.reduce((sum, venta) => sum + venta.total, 0);
+        $('#ventas-hoy').text(`S/ ${totalVentas.toFixed(2)}`);
+    });
+}
+</script>
+{% endblock %} 

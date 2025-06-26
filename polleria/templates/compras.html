@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Compras - Pollería JT{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-shopping-cart me-2"></i>
+            Gestión de Compras
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Nueva Compra -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>
+                    Registrar Nueva Compra
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="form-compra">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Proveedor:</label>
+                                <input type="text" class="form-control" id="proveedor" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Número de Factura/Boleta:</label>
+                                <input type="text" class="form-control" id="factura" placeholder="Opcional">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Detalles de la Compra:</h6>
+                    <div id="detalles-compra">
+                        <div class="row detalle-item mb-3">
+                            <div class="col-md-4">
+                                <select class="form-select insumo-select" required>
+                                    <option value="">Seleccionar insumo</option>
+                                    {% for insumo in insumos %}
+                                    <option value="{{ insumo.id }}" data-precio="{{ insumo.precio_unitario }}">
+                                        {{ insumo.nombre }} ({{ insumo.unidad }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control cantidad-input" placeholder="Cantidad" step="0.01" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control precio-input" placeholder="Precio unit." step="0.01" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control subtotal-input" placeholder="Subtotal" readonly>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarDetalle(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-primary mb-3" onclick="agregarDetalle()">
+                        <i class="fas fa-plus me-2"></i>
+                        Agregar Insumo
+                    </button>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Total de la Compra:</label>
+                                <input type="number" class="form-control" id="total-compra" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-2"></i>
+                                        Registrar Compra
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumen -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Resumen de Compras
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="stats-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Compras del Mes</h6>
+                            <h3 id="compras-mes">S/. 0.00</h3>
+                        </div>
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+                
+                <div class="stats-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Compras de Hoy</h6>
+                            <h3 id="compras-hoy">S/. 0.00</h3>
+                        </div>
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Proveedores</h6>
+                            <h3 id="total-proveedores">0</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial de Compras -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Historial de Compras
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Proveedor</th>
+                                <th>Factura</th>
+                                <th>Total</th>
+                                <th>Registrado por</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for compra in compras %}
+                            <tr>
+                                <td>{{ compra.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td>{{ compra.proveedor }}</td>
+                                <td>{{ compra.factura or 'Sin factura' }}</td>
+                                <td class="text-success fw-bold">S/. {{ "%.2f"|format(compra.total) }}</td>
+                                <td>{{ compra.usuario.nombre }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="verDetalleCompra({{ compra.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalle de Compra -->
+<div class="modal fade" id="modalDetalleCompra" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>
+                    Detalle de Compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detalle-compra-info">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    cargarResumenCompras();
+    
+    // Calcular subtotales automáticamente
+    $(document).on('input', '.cantidad-input, .precio-input', function() {
+        calcularSubtotal($(this).closest('.detalle-item'));
+    });
+    
+    // Formulario de compra
+    $('#form-compra').submit(function(e) {
+        e.preventDefault();
+        registrarCompra();
+    });
+});
+
+function agregarDetalle() {
+    const detalleHtml = `
+        <div class="row detalle-item mb-3">
+            <div class="col-md-4">
+                <select class="form-select insumo-select" required>
+                    <option value="">Seleccionar insumo</option>
+                    {% for insumo in insumos %}
+                    <option value="{{ insumo.id }}" data-precio="{{ insumo.precio_unitario }}">
+                        {{ insumo.nombre }} ({{ insumo.unidad }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control cantidad-input" placeholder="Cantidad" step="0.01" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control precio-input" placeholder="Precio unit." step="0.01" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control subtotal-input" placeholder="Subtotal" readonly>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarDetalle(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    $('#detalles-compra').append(detalleHtml);
+}
+
+function eliminarDetalle(button) {
+    $(button).closest('.detalle-item').remove();
+    calcularTotal();
+}
+
+function calcularSubtotal(detalleItem) {
+    const cantidad = parseFloat(detalleItem.find('.cantidad-input').val()) || 0;
+    const precio = parseFloat(detalleItem.find('.precio-input').val()) || 0;
+    const subtotal = cantidad * precio;
+    
+    detalleItem.find('.subtotal-input').val(subtotal.toFixed(2));
+    calcularTotal();
+}
+
+function calcularTotal() {
+    let total = 0;
+    $('.subtotal-input').each(function() {
+        total += parseFloat($(this).val()) || 0;
+    });
+    $('#total-compra').val(total.toFixed(2));
+}
+
+function registrarCompra() {
+    const proveedor = $('#proveedor').val();
+    const factura = $('#factura').val();
+    const total = parseFloat($('#total-compra').val());
+    
+    if (!proveedor || total <= 0) {
+        Swal.fire('Error', 'Por favor complete el proveedor y asegúrese de que el total sea mayor a cero.', 'error');
+        return;
+    }
+    
+    const detalles = [];
+    let hayErrores = false;
+    $('.detalle-item').each(function() {
+        const insumoId = $(this).find('.insumo-select').val();
+        const cantidad = parseFloat($(this).find('.cantidad-input').val());
+        const precio = parseFloat($(this).find('.precio-input').val());
+        
+        if (insumoId && cantidad > 0 && precio > 0) {
+            detalles.push({
+                insumo_id: parseInt(insumoId),
+                cantidad: cantidad,
+                precio_unitario: precio,
+                subtotal: cantidad * precio
+            });
+        } else {
+            hayErrores = true;
+        }
+    });
+    
+    if (hayErrores || detalles.length === 0) {
+        Swal.fire('Error', 'Debe agregar al menos un insumo con cantidad y precio válidos.', 'error');
+        return;
+    }
+    
+    const compraData = {
+        proveedor: proveedor,
+        factura: factura,
+        total: total,
+        detalles: detalles
+    };
+    
+    $.ajax({
+        url: '/api/registrar_compra',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(compraData),
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    title: 'Éxito',
+                    text: 'Compra registrada exitosamente',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                 Swal.fire('Error', response.message || 'Error desconocido al registrar la compra.', 'error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+             const errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Error de conexión o del servidor.';
+             Swal.fire('Error', errorMsg, 'error');
+        }
+    });
+}
+
+function cargarResumenCompras() {
+    $.get('/api/resumen-compras', function(data) {
+        $('#compras-mes').text('S/. ' + (data.compras_mes || '0.00'));
+        $('#compras-hoy').text('S/. ' + (data.compras_hoy || '0.00'));
+        $('#total-proveedores').text(data.total_proveedores || '0');
+    }).fail(function() {
+        $('#compras-mes').text('S/. 0.00');
+        $('#compras-hoy').text('S/. 0.00');
+        $('#total-proveedores').text('0');
+    });
+}
+
+function verDetalleCompra(compraId) {
+    $.get(`/api/detalle-compra/${compraId}`, function(data) {
+        let html = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Proveedor:</strong> ${data.proveedor}
+                </div>
+                <div class="col-md-6">
+                    <strong>Fecha:</strong> ${data.fecha}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Factura:</strong> ${data.factura || 'Sin factura'}
+                </div>
+                <div class="col-md-6">
+                    <strong>Total:</strong> S/. ${data.total.toFixed(2)}
+                </div>
+            </div>
+            
+            <h6>Detalles:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Insumo</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.detalles.forEach(function(detalle) {
+            html += `
+                <tr>
+                    <td>${detalle.insumo_nombre}</td>
+                    <td>${detalle.cantidad} ${detalle.insumo_unidad}</td>
+                    <td>S/. ${detalle.precio_unitario.toFixed(2)}</td>
+                    <td>S/. ${detalle.subtotal.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        $('#detalle-compra-info').html(html);
+        $('#modalDetalleCompra').modal('show');
+    }).fail(function() {
+        $('#detalle-compra-info').html('<p class="text-muted text-center">Error al cargar el detalle</p>');
+        $('#modalDetalleCompra').modal('show');
+    });
+}
+</script>
+{% endblock %} 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Globe, Home, Users, ShoppingCart, Mail, Info, FileText, Image, Settings, Search } from 'lucide-react';
 import socialMediaPreview from './assets/socialmedia.png';
 import travelAgencyPreview from './assets/agenciadeviaje.png';
@@ -8,6 +8,9 @@ import gestorPreview from './assets/gestor.png';
 import dentalPreview from './assets/dental.png';
 import restaurantePreview from './assets/restauran.png';
 import tiendaPreview from './assets/tienda.png';
+import polleriaPreview from './assets/polleriajt/hero-polleria.png';
+import lubricantePreview from './assets/lubricantejt/hero-lubricante1.png';
+import logisticaPreview from './assets/logisticajt/hero-logistica1.png';
 
 const projects = [
   {
@@ -65,7 +68,31 @@ const projects = [
     path: '/gestor',
     color: 'from-green-500 to-teal-500',
     icon: '⚙️'
-  }
+  },
+  {
+    title: 'Gestor Pollería JT',
+    description: 'Sistema integral para pollerías y restaurantes',
+    image: polleriaPreview,
+    path: '/gestor-polleria',
+    color: 'from-yellow-500 to-red-400',
+    icon: '🍗'
+  },
+  {
+    title: 'Gestor Lubricantes JT',
+    description: 'Gestión para lubricentros y cambios de aceite',
+    image: lubricantePreview,
+    path: '/gestor-lubricantes',
+    color: 'from-gray-700 to-yellow-500',
+    icon: '🛢️'
+  },
+  {
+    title: 'Gestor Logística JT',
+    description: 'Sistema logístico para transporte de carga',
+    image: logisticaPreview,
+    path: '/gestor-logistica',
+    color: 'from-blue-900 to-gray-400',
+    icon: '🚚'
+  },
 ];
 
 const siteTypes = {
@@ -132,6 +159,7 @@ const siteTypes = {
 
 const WebsiteStructureBuilder = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedType, setSelectedType] = useState('corporate');
   const [expandedSections, setExpandedSections] = useState({});
 

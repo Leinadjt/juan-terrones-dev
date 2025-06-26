@@ -1,0 +1,724 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas - Lubricante JT{% endblock %}
+{% block page_title %}Gestión de Ventas{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevaVentaModal">
+    <i class="fas fa-plus me-1"></i> Nueva Venta
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Historial de Ventas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ventas-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Cliente</th>
+                                <th>Vehículo</th>
+                                <th>Tipo</th>
+                                <th>Subtotal</th>
+                                <th>IGV</th>
+                                <th>Total</th>
+                                <th>Método Pago</th>
+                                <th>Fecha</th>
+                                <th>Usuario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Venta -->
+<div class="modal fade" id="nuevaVentaModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Nueva Venta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ventaForm">
+                    <!-- Datos del Cliente -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user me-1"></i>
+                                Datos del Cliente
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" class="form-control" id="clienteNombre" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Celular</label>
+                            <input type="text" class="form-control" id="clienteCelular">
+                        </div>
+                    </div>
+
+                    <!-- Datos del Vehículo (opcional) -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-car me-1"></i>
+                                Datos del Vehículo (Opcional)
+                            </h6>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Placa</label>
+                            <input type="text" class="form-control" id="vehiculoPlaca">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="vehiculoTipo">
+                                <option value="">Seleccionar...</option>
+                                <option value="auto">Auto</option>
+                                <option value="camion">Camión</option>
+                                <option value="moto">Moto</option>
+                                <option value="camioneta">Camioneta</option>
+                                <option value="bus">Bus</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="vehiculoMarca">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" class="form-control" id="vehiculoModelo">
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Venta y datos de servicio -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo de Venta</label>
+                            <select class="form-select" id="tipoVenta" required>
+                                <option value="producto">Producto</option>
+                                <option value="servicio">Servicio</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-none" id="tipoServicioGroup">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select class="form-select" id="tipoServicioVenta" multiple>
+                                <option value="Cambio de Aceite">Cambio de Aceite</option>
+                                <option value="Cambio de Filtro de Aceite">Cambio de Filtro de Aceite</option>
+                                <option value="Cambio de Filtro de Aire">Cambio de Filtro de Aire</option>
+                                <option value="Cambio de Filtro de Combustible">Cambio de Filtro de Combustible</option>
+                                <option value="Cambio de Aceite de Transmisión">Cambio de Aceite de Transmisión</option>
+                                <option value="Lavado de Motor">Lavado de Motor</option>
+                                <option value="Servicio Completo">Servicio Completo</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-none" id="kilometrajeGroup">
+                            <label class="form-label">Kilometraje Actual</label>
+                            <input type="number" class="form-control" id="kilometrajeVenta" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Datos del Servicio (solo si es servicio) -->
+                    <div class="row mb-3 d-none" id="datosServicioGroup">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-wrench me-1"></i>
+                                Datos del Servicio
+                            </h6>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Tipo de Servicio</label>
+                            <select class="form-select" id="tipoServicioVenta" multiple>
+                                <option value="Cambio de Aceite">Cambio de Aceite</option>
+                                <option value="Cambio de Filtro de Aceite">Cambio de Filtro de Aceite</option>
+                                <option value="Cambio de Filtro de Aire">Cambio de Filtro de Aire</option>
+                                <option value="Cambio de Filtro de Combustible">Cambio de Filtro de Combustible</option>
+                                <option value="Cambio de Aceite de Transmisión">Cambio de Aceite de Transmisión</option>
+                                <option value="Lavado de Motor">Lavado de Motor</option>
+                                <option value="Servicio Completo">Servicio Completo</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <small class="form-text text-muted">Puede seleccionar uno o varios servicios realizados</small>
+                        </div>
+                    </div>
+
+                    <!-- Productos -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary">
+                                <i class="fas fa-boxes me-1"></i>
+                                Productos
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <div id="productosVentaContainer">
+                                <div class="row producto-venta-item mb-2">
+                                    <div class="col-md-4">
+                                        <select class="form-select producto-venta-select" required>
+                                            <option value="">Seleccionar producto...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control cantidad-venta-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control precio-venta-input" placeholder="Precio" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" class="form-control subtotal-venta-input" placeholder="Subtotal" readonly>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger btn-sm eliminar-producto-venta">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="agregarProductoVenta">
+                                <i class="fas fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Método de Pago</label>
+                            <select class="form-select" id="metodoPagoVenta" required>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="yape">Yape</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Total (incluye IGV)</label>
+                            <input type="number" class="form-control" id="total-venta-input" placeholder="Ingrese el total" min="0" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Observaciones</label>
+                            <input type="text" class="form-control" id="observacionesVenta">
+                        </div>
+                    </div>
+
+                    <!-- Desglose -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Subtotal (Base Imponible):</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="subtotal-venta">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>IGV (18%):</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="igv-venta">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Total:</strong>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span id="total-venta" class="h5 text-primary">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="guardarVenta">
+                    <i class="fas fa-save me-1"></i> Guardar Venta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalles de Venta -->
+<div class="modal fade" id="detallesVentaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Detalles de Venta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detallesVentaBody">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" id="imprimirTicket">
+                    <i class="fas fa-print me-1"></i> Imprimir Ticket
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Agregar jsPDF CDN antes del script principal -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    cargarVentas();
+    cargarProductos();
+    
+    // Eventos para productos de venta
+    $(document).on('change', '.producto-venta-select', function() {
+        const productoId = $(this).val();
+        const row = $(this).closest('.producto-venta-item');
+        
+        if (productoId) {
+            const producto = productos.find(p => p.id == productoId);
+            if (producto) {
+                row.find('.precio-venta-input').val(producto.precio_venta);
+                calcularSubtotalVenta(row);
+            }
+        }
+    });
+    
+    $(document).on('input', '.cantidad-venta-input, .precio-venta-input', function() {
+        calcularSubtotalVenta($(this).closest('.producto-venta-item'));
+    });
+    
+    $('#agregarProductoVenta').click(function() {
+        agregarFilaProductoVenta();
+    });
+    
+    $(document).on('click', '.eliminar-producto-venta', function() {
+        $(this).closest('.producto-venta-item').remove();
+        calcularTotalesVenta();
+    });
+    
+    $('#guardarVenta').click(function() {
+        guardarVenta();
+    });
+    
+    // Evento para calcular automáticamente el desglose cuando se ingresa el total
+    $('#total-venta-input').on('input', function() {
+        calcularDesgloseVenta();
+    });
+
+    // Mostrar/ocultar campos de servicio según tipo de venta
+    $('#tipoVenta').on('change', function() {
+        if ($(this).val() === 'servicio') {
+            $('#datosServicioGroup').removeClass('d-none');
+            $('#kilometrajeGroup').removeClass('d-none');
+            $('#tipoServicioVenta').attr('required', true);
+            $('#kilometrajeVenta').attr('required', true);
+        } else {
+            $('#datosServicioGroup').addClass('d-none');
+            $('#kilometrajeGroup').addClass('d-none');
+            $('#tipoServicioVenta').removeAttr('required');
+            $('#kilometrajeVenta').removeAttr('required');
+        }
+    });
+    // Inicializar estado
+    $('#tipoVenta').trigger('change');
+
+    // Inicializar Select2 en el selector de tipo de servicio cada vez que se abre el modal
+    $('#nuevaVentaModal').on('shown.bs.modal', function () {
+        $('#tipoServicioVenta').select2({
+            width: '100%',
+            placeholder: 'Seleccione uno o varios servicios',
+            allowClear: true,
+            dropdownParent: $('#nuevaVentaModal')
+        });
+    });
+});
+
+let productos = [];
+
+function cargarVentas() {
+    $.get('/api/ventas', function(data) {
+        const tbody = $('#ventas-table tbody');
+        tbody.empty();
+        
+        data.forEach(function(venta) {
+            const tipoClass = venta.tipo_venta === 'servicio' ? 'primary' : 'success';
+            
+            tbody.append(`
+                <tr>
+                    <td><strong>${venta.numero_ticket}</strong></td>
+                    <td>${venta.cliente}</td>
+                    <td>${venta.placa}</td>
+                    <td><span class="badge bg-${tipoClass}">${venta.tipo_venta}</span></td>
+                    <td><span class="badge bg-secondary">S/ ${venta.subtotal.toFixed(2)}</span></td>
+                    <td><span class="badge bg-warning">S/ ${venta.igv.toFixed(2)}</span></td>
+                    <td><span class="badge bg-success">S/ ${venta.total.toFixed(2)}</span></td>
+                    <td><span class="badge bg-info">${venta.metodo_pago}</span></td>
+                    <td>${venta.fecha_venta}</td>
+                    <td>${venta.usuario}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="verDetallesVenta(${venta.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="imprimirTicket('${venta.numero_ticket}')">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    });
+}
+
+function cargarProductos() {
+    $.get('/api/inventario', function(data) {
+        productos = data;
+        const options = data.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+        
+        $('.producto-venta-select').each(function() {
+            $(this).html('<option value="">Seleccionar producto...</option>' + options);
+        });
+    });
+}
+
+function agregarFilaProductoVenta() {
+    const options = productos.map(p => `<option value="${p.id}">${p.nombre} - Stock: ${p.stock_actual} ${p.presentacion}</option>`).join('');
+    
+    const nuevaFila = `
+        <div class="row producto-venta-item mb-2">
+            <div class="col-md-4">
+                <select class="form-select producto-venta-select" required>
+                    <option value="">Seleccionar producto...</option>
+                    ${options}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control cantidad-venta-input" placeholder="Cantidad" min="0.1" step="0.1" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control precio-venta-input" placeholder="Precio" min="0" step="0.01" required>
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control subtotal-venta-input" placeholder="Subtotal" readonly>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm eliminar-producto-venta">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    $('#productosVentaContainer').append(nuevaFila);
+}
+
+function calcularSubtotalVenta(row) {
+    const cantidad = parseFloat(row.find('.cantidad-venta-input').val()) || 0;
+    const precio = parseFloat(row.find('.precio-venta-input').val()) || 0;
+    const subtotal = cantidad * precio;
+    
+    row.find('.subtotal-venta-input').val(subtotal.toFixed(2));
+}
+
+function calcularDesgloseVenta() {
+    const totalIngresado = parseFloat($('#total-venta-input').val()) || 0;
+    
+    if (totalIngresado > 0) {
+        // Calcular subtotal (base imponible) y IGV
+        const subtotal = totalIngresado / 1.18;  // Base imponible
+        const igv = totalIngresado - subtotal;
+        
+        $('#subtotal-venta').text(`S/ ${subtotal.toFixed(2)}`);
+        $('#igv-venta').text(`S/ ${igv.toFixed(2)}`);
+        $('#total-venta').text(`S/ ${totalIngresado.toFixed(2)}`);
+    } else {
+        $('#subtotal-venta').text('S/ 0.00');
+        $('#igv-venta').text('S/ 0.00');
+        $('#total-venta').text('S/ 0.00');
+    }
+}
+
+function guardarVenta() {
+    const productos = [];
+    
+    $('.producto-venta-item').each(function() {
+        const productoId = $(this).find('.producto-venta-select').val();
+        const cantidad = parseFloat($(this).find('.cantidad-venta-input').val()) || 0;
+        const precio = parseFloat($(this).find('.precio-venta-input').val()) || 0;
+        
+        if (productoId && cantidad > 0 && precio > 0) {
+            productos.push({
+                producto_id: parseInt(productoId),
+                cantidad: cantidad,
+                precio_unitario: precio
+            });
+        }
+    });
+    
+    if (productos.length === 0) {
+        alert('Debe agregar al menos un producto');
+        return;
+    }
+    
+    const totalIngresado = parseFloat($('#total-venta-input').val()) || 0;
+    if (totalIngresado <= 0) {
+        alert('Debe ingresar un total válido');
+        return;
+    }
+    
+    const tipoVenta = $('#tipoVenta').val();
+    let tiposServicio = [];
+    if (tipoVenta === 'servicio') {
+        tiposServicio = $('#tipoServicioVenta').val();
+    }
+    const kilometraje = tipoVenta === 'servicio' ? $('#kilometrajeVenta').val() : null;
+
+    const ventaData = {
+        cliente: {
+            nombre: $('#clienteNombre').val(),
+            celular: $('#clienteCelular').val()
+        },
+        vehiculo: {
+            placa: $('#vehiculoPlaca').val() || null,
+            tipo: $('#vehiculoTipo').val() || null,
+            marca: $('#vehiculoMarca').val() || null,
+            modelo: $('#vehiculoModelo').val() || null
+        },
+        tipo_venta: tipoVenta,
+        tipos_servicio: tiposServicio,
+        kilometraje: kilometraje,
+        metodo_pago: $('#metodoPagoVenta').val(),
+        observaciones: $('#observacionesVenta').val(),
+        productos: productos,
+        total: totalIngresado,
+        total_incluye_igv: true
+    };
+    
+    // Enviar la venta al servidor
+    $.ajax({
+        url: '/api/ventas',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(ventaData),
+        success: function(response) {
+            if (response.success) {
+                alert('Venta registrada exitosamente!');
+                $('#nuevaVentaModal').modal('hide');
+                $('#ventaForm')[0].reset();
+                $('#productosVentaContainer').html('');
+                agregarFilaProductoVenta();
+                cargarVentas();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        },
+        error: function(xhr) {
+            alert('Error al registrar la venta: ' + xhr.responseText);
+        }
+    });
+}
+
+function verDetallesVenta(ventaId) {
+    $.get(`/api/ventas/${ventaId}`, function(venta) {
+        let detallesHtml = '';
+        venta.detalles.forEach(function(detalle) {
+            detallesHtml += `
+                <tr>
+                    <td>${detalle.producto}</td>
+                    <td>${detalle.cantidad}</td>
+                    <td>S/ ${detalle.precio_unitario.toFixed(2)}</td>
+                    <td>S/ ${detalle.subtotal.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        
+        $('#detallesVentaBody').html(`
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Información de la Venta</h6>
+                    <p><strong>Ticket:</strong> ${venta.numero_ticket}</p>
+                    <p><strong>Fecha:</strong> ${venta.fecha_venta}</p>
+                    <p><strong>Usuario:</strong> ${venta.usuario}</p>
+                    <p><strong>Método de Pago:</strong> ${venta.metodo_pago}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-primary">Cliente</h6>
+                    <p><strong>Nombre:</strong> ${venta.cliente.nombre}</p>
+                    <p><strong>Celular:</strong> ${venta.cliente.celular || 'N/A'}</p>
+                    <p><strong>Email:</strong> ${venta.cliente.email || 'N/A'}</p>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Vehículo</h6>
+                    <p><strong>Placa:</strong> ${venta.vehiculo.placa}</p>
+                    <p><strong>Tipo:</strong> ${venta.vehiculo.tipo || 'N/A'}</p>
+                    <p><strong>Marca:</strong> ${venta.vehiculo.marca || 'N/A'}</p>
+                    <p><strong>Modelo:</strong> ${venta.vehiculo.modelo || 'N/A'}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-primary">Totales</h6>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6"><strong>Subtotal:</strong></div>
+                                <div class="col-6 text-end">S/ ${venta.subtotal.toFixed(2)}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6"><strong>IGV (18%):</strong></div>
+                                <div class="col-6 text-end">S/ ${venta.igv.toFixed(2)}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-6"><strong>Total:</strong></div>
+                                <div class="col-6 text-end"><strong>S/ ${venta.total.toFixed(2)}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6 class="text-primary">Detalles de Productos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${detallesHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        $('#detallesVentaModal').modal('show');
+    });
+}
+
+function imprimirTicket(ticket) {
+    $.get(`/api/ventas/ticket/${ticket}`, function(ventaDetalle) {
+        generarTicket(ventaDetalle);
+    }).fail(function() {
+        alert('No se encontró la venta');
+    });
+}
+
+function generarTicket(venta) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: [80, 150] });
+    let y = 10;
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(14);
+    doc.text('LUBRICANTE JT', 40, y, { align: 'center' });
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont('courier', 'normal');
+    doc.text('Servicios Automotrices', 40, y, { align: 'center' });
+    y += 5;
+    doc.text('RUC: 20123456789', 40, y, { align: 'center' });
+    y += 5;
+    doc.text('Av. Principal 123, Lima', 40, y, { align: 'center' });
+    y += 5;
+    doc.text('Tel: (01) 123-4567', 40, y, { align: 'center' });
+    y += 6;
+    doc.line(5, y, 75, y);
+    y += 4;
+    doc.setFontSize(10);
+    doc.text(`Ticket: ${venta.numero_ticket}`, 5, y);
+    y += 5;
+    doc.text(`Fecha: ${venta.fecha_venta}`, 5, y);
+    y += 5;
+    doc.text(`Cliente: ${venta.cliente.nombre}`, 5, y);
+    y += 5;
+    doc.text(`Vehículo: ${venta.vehiculo.placa}`, 5, y);
+    y += 5;
+    doc.text(`Método Pago: ${venta.metodo_pago.toUpperCase()}`, 5, y);
+    y += 6;
+    doc.setFont('courier', 'bold');
+    doc.text('Producto', 5, y);
+    doc.text('Cant.', 35, y);
+    doc.text('P.Unit', 48, y);
+    doc.text('Total', 65, y);
+    y += 3;
+    doc.setFont('courier', 'normal');
+    doc.line(5, y, 75, y);
+    y += 4;
+    venta.detalles.forEach(function(detalle) {
+        doc.text(`${detalle.producto}`.substring(0, 12), 5, y);
+        doc.text(`${detalle.cantidad}`, 35, y, { align: 'right' });
+        doc.text(`S/ ${detalle.precio_unitario.toFixed(2)}`, 48, y, { align: 'right' });
+        doc.text(`S/ ${detalle.subtotal.toFixed(2)}`, 75, y, { align: 'right' });
+        y += 5;
+    });
+    y += 2;
+    doc.line(5, y, 75, y);
+    y += 5;
+    doc.setFont('courier', 'bold');
+    doc.text('Subtotal:', 5, y);
+    doc.text(`S/ ${venta.subtotal.toFixed(2)}`, 75, y, { align: 'right' });
+    y += 5;
+    doc.text('IGV (18%):', 5, y);
+    doc.text(`S/ ${venta.igv.toFixed(2)}`, 75, y, { align: 'right' });
+    y += 5;
+    doc.setFontSize(12);
+    doc.text('TOTAL:', 5, y);
+    doc.text(`S/ ${venta.total.toFixed(2)}`, 75, y, { align: 'right' });
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('courier', 'normal');
+    doc.text('¡Gracias por su preferencia!', 40, y, { align: 'center' });
+    y += 5;
+    doc.text(`Atendido por: ${venta.usuario}`, 40, y, { align: 'center' });
+    y += 5;
+    doc.text(new Date().toLocaleString('es-PE'), 40, y, { align: 'center' });
+    // Descargar PDF con el nombre del ticket
+    doc.save(`${venta.numero_ticket}.pdf`);
+}
+</script>
+{% endblock %} 

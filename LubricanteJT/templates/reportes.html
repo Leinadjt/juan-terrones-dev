@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Lubricante JT{% endblock %}
+{% block page_title %}Reportes y Estadísticas{% endblock %}
+
+{% block page_actions %}
+<button class="btn btn-success" onclick="exportarGoogleSheets()">
+    <i class="fas fa-file-excel me-1"></i> Exportar a Google Sheets
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Filtros -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>
+                    Filtros
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Inicio</label>
+                        <input type="date" class="form-control" id="fechaInicio">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha Fin</label>
+                        <input type="date" class="form-control" id="fechaFin">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Reporte</label>
+                        <select class="form-select" id="tipoReporte">
+                            <option value="servicios">Servicios</option>
+                            <option value="ventas">Ventas</option>
+                            <option value="stock">Stock</option>
+                            <option value="compras">Compras</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" onclick="generarReporte()">
+                            <i class="fas fa-search me-1"></i> Generar Reporte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Resumen General -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Servicios del Período
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalServicios">0</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tools fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Ventas del Período
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalVentas">S/ 0.00</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Compras del Período
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalCompras">S/ 0.00</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-truck fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Valor Stock Actual
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="valorStock">S/ 0.00</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Tabla de Reporte -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    <span id="tituloReporte">Reporte de Servicios</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="reporte-table">
+                        <thead>
+                            <tr>
+                                <!-- Se llena dinámicamente según el tipo de reporte -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llena dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Ventas por Método de Pago
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="ventasMetodoPagoChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Servicios por Tipo
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="serviciosTipoChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuración Google Sheets -->
+<div class="modal fade" id="googleSheetsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fab fa-google me-2"></i>
+                    Configuración Google Sheets
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Para exportar a Google Sheets, necesitas configurar las credenciales de la API.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">ID de la Hoja de Cálculo</label>
+                    <input type="text" class="form-control" id="spreadsheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms">
+                    <small class="text-muted">ID de la hoja de cálculo de Google Sheets</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Nombre de la Hoja</label>
+                    <input type="text" class="form-control" id="sheetName" value="Reporte" placeholder="Nombre de la hoja">
+                    <small class="text-muted">Nombre de la hoja donde se exportarán los datos</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Archivo de Credenciales</label>
+                    <input type="file" class="form-control" id="credentialsFile" accept=".json">
+                    <small class="text-muted">Archivo JSON de credenciales de la API de Google</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="configurarGoogleSheets()">
+                    <i class="fas fa-save me-1"></i> Guardar Configuración
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // Establecer fechas por defecto (último mes)
+    const hoy = new Date();
+    const haceUnMes = new Date();
+    haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+    
+    $('#fechaInicio').val(haceUnMes.toISOString().split('T')[0]);
+    $('#fechaFin').val(hoy.toISOString().split('T')[0]);
+    
+    // Generar reporte inicial
+    generarReporte();
+    
+    // Cargar gráficos
+    cargarGraficos();
+});
+
+function generarReporte() {
+    const fechaInicio = $('#fechaInicio').val();
+    const fechaFin = $('#fechaFin').val();
+    const tipoReporte = $('#tipoReporte').val();
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Seleccione las fechas de inicio y fin');
+        return;
+    }
+    
+    // Actualizar título del reporte
+    const titulos = {
+        'servicios': 'Reporte de Servicios',
+        'ventas': 'Reporte de Ventas',
+        'stock': 'Reporte de Stock',
+        'compras': 'Reporte de Compras'
+    };
+    $('#tituloReporte').text(titulos[tipoReporte]);
+    
+    // Cargar datos según el tipo de reporte
+    switch(tipoReporte) {
+        case 'servicios':
+            cargarReporteServicios(fechaInicio, fechaFin);
+            break;
+        case 'ventas':
+            cargarReporteVentas(fechaInicio, fechaFin);
+            break;
+        case 'stock':
+            cargarReporteStock();
+            break;
+        case 'compras':
+            cargarReporteCompras(fechaInicio, fechaFin);
+            break;
+    }
+    
+    // Actualizar resumen
+    actualizarResumen(fechaInicio, fechaFin);
+}
+
+function cargarReporteServicios(fechaInicio, fechaFin) {
+    $.get(`/api/reportes/servicios?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, function(data) {
+        const thead = $('#reporte-table thead tr');
+        const tbody = $('#reporte-table tbody');
+        
+        thead.html(`
+            <th>Ticket</th>
+            <th>Placa</th>
+            <th>Cliente</th>
+            <th>Tipo Servicio</th>
+            <th>Kilometraje</th>
+            <th>Fecha</th>
+            <th>Total</th>
+        `);
+        
+        tbody.empty();
+        data.forEach(function(servicio) {
+            tbody.append(`
+                <tr>
+                    <td>${servicio.numero_ticket || '-'}</td>
+                    <td><strong>${servicio.placa}</strong></td>
+                    <td>${servicio.cliente}</td>
+                    <td>${servicio.tipo_servicio}</td>
+                    <td>${servicio.kilometraje_actual} km</td>
+                    <td>${servicio.fecha_servicio}</td>
+                    <td><span class="badge bg-success">S/ ${servicio.total.toFixed(2)}</span></td>
+                </tr>
+            `);
+        });
+        
+        $('#totalServicios').text(data.length);
+    });
+}
+
+function cargarReporteVentas(fechaInicio, fechaFin) {
+    $.get(`/api/reportes/ventas?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, function(data) {
+        const thead = $('#reporte-table thead tr');
+        const tbody = $('#reporte-table tbody');
+        
+        thead.html(`
+            <th>Ticket</th>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Subtotal</th>
+            <th>IGV</th>
+            <th>Total</th>
+            <th>Método Pago</th>
+            <th>Fecha</th>
+        `);
+        
+        tbody.empty();
+        data.forEach(function(venta) {
+            tbody.append(`
+                <tr>
+                    <td><strong>${venta.numero_ticket}</strong></td>
+                    <td>${venta.cliente}</td>
+                    <td><span class="badge bg-primary">${venta.tipo_venta}</span></td>
+                    <td>S/ ${venta.subtotal.toFixed(2)}</td>
+                    <td>S/ ${venta.igv.toFixed(2)}</td>
+                    <td><span class="badge bg-success">S/ ${venta.total.toFixed(2)}</span></td>
+                    <td><span class="badge bg-info">${venta.metodo_pago}</span></td>
+                    <td>${venta.fecha_venta}</td>
+                </tr>
+            `);
+        });
+        
+        const totalVentas = data.reduce((sum, venta) => sum + venta.total, 0);
+        $('#totalVentas').text(`S/ ${totalVentas.toFixed(2)}`);
+    });
+}
+
+function cargarReporteStock() {
+    $.get('/api/reportes/stock', function(data) {
+        const thead = $('#reporte-table thead tr');
+        const tbody = $('#reporte-table tbody');
+        
+        thead.html(`
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Stock Actual</th>
+            <th>Stock Mínimo</th>
+            <th>Precio Compra</th>
+            <th>Precio Venta</th>
+            <th>Valor Stock</th>
+            <th>Estado</th>
+        `);
+        
+        tbody.empty();
+        data.forEach(function(producto) {
+            const estadoClass = producto.alerta ? 'danger' : 'success';
+            const estadoText = producto.alerta ? 'Stock Bajo' : 'Normal';
+            
+            tbody.append(`
+                <tr>
+                    <td><strong>${producto.nombre}</strong></td>
+                    <td><span class="badge bg-info">${producto.tipo}</span></td>
+                    <td>${producto.stock_actual} ${producto.presentacion}</td>
+                    <td>${producto.stock_minimo}</td>
+                    <td>S/ ${producto.precio_compra.toFixed(2)}</td>
+                    <td>S/ ${producto.precio_venta.toFixed(2)}</td>
+                    <td>S/ ${producto.valor_stock.toFixed(2)}</td>
+                    <td><span class="badge bg-${estadoClass}">${estadoText}</span></td>
+                </tr>
+            `);
+        });
+        
+        const valorTotalStock = data.reduce((sum, producto) => sum + producto.valor_stock, 0);
+        $('#valorStock').text(`S/ ${valorTotalStock.toFixed(2)}`);
+    });
+}
+
+function cargarReporteCompras(fechaInicio, fechaFin) {
+    $.get(`/api/compras`, function(data) {
+        // Filtrar por fechas
+        const comprasFiltradas = data.filter(compra => {
+            const fechaCompra = new Date(compra.fecha_compra);
+            const inicio = new Date(fechaInicio);
+            const fin = new Date(fechaFin);
+            return fechaCompra >= inicio && fechaCompra <= fin;
+        });
+        
+        const thead = $('#reporte-table thead tr');
+        const tbody = $('#reporte-table tbody');
+        
+        thead.html(`
+            <th>Factura</th>
+            <th>Proveedor</th>
+            <th>RUC</th>
+            <th>Subtotal</th>
+            <th>IGV</th>
+            <th>Total</th>
+            <th>Fecha</th>
+        `);
+        
+        tbody.empty();
+        comprasFiltradas.forEach(function(compra) {
+            tbody.append(`
+                <tr>
+                    <td><strong>${compra.numero_factura || 'N/A'}</strong></td>
+                    <td>${compra.proveedor}</td>
+                    <td>${compra.ruc || 'N/A'}</td>
+                    <td>S/ ${compra.subtotal.toFixed(2)}</td>
+                    <td>S/ ${compra.igv.toFixed(2)}</td>
+                    <td><span class="badge bg-success">S/ ${compra.total.toFixed(2)}</span></td>
+                    <td>${compra.fecha_compra}</td>
+                </tr>
+            `);
+        });
+        
+        const totalCompras = comprasFiltradas.reduce((sum, compra) => sum + compra.total, 0);
+        $('#totalCompras').text(`S/ ${totalCompras.toFixed(2)}`);
+    });
+}
+
+function actualizarResumen(fechaInicio, fechaFin) {
+    // Actualizar total de ventas
+    $.get(`/api/reportes/ventas?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, function(data) {
+        const totalVentas = data.reduce((sum, venta) => sum + venta.total, 0);
+        $('#totalVentas').text(`S/ ${totalVentas.toFixed(2)}`);
+    });
+    // Actualizar total de compras
+    $.get(`/api/compras`, function(data) {
+        // Filtrar por fechas
+        const comprasFiltradas = data.filter(compra => {
+            const [dia, mes, anio] = compra.fecha_compra.split('/');
+            const fechaCompra = new Date(`${anio}-${mes}-${dia}`);
+            const inicio = new Date(fechaInicio);
+            const fin = new Date(fechaFin);
+            return fechaCompra >= inicio && fechaCompra <= fin;
+        });
+        const totalCompras = comprasFiltradas.reduce((sum, compra) => sum + compra.total, 0);
+        $('#totalCompras').text(`S/ ${totalCompras.toFixed(2)}`);
+    });
+    // Actualizar valor de stock
+    $.get('/api/reportes/stock', function(data) {
+        const valorTotalStock = data.reduce((sum, producto) => sum + producto.valor_stock, 0);
+        $('#valorStock').text(`S/ ${valorTotalStock.toFixed(2)}`);
+    });
+}
+
+function cargarGraficos() {
+    const fechaInicio = $('#fechaInicio').val();
+    const fechaFin = $('#fechaFin').val();
+
+    // Gráfico de ventas por método de pago
+    $.get(`/api/reportes/ventas?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, function(data) {
+        // Contar ventas por método de pago
+        const metodos = ['efectivo', 'yape', 'tarjeta', 'transferencia'];
+        const colores = ['#28a745', '#17a2b8', '#ffc107', '#6c757d'];
+        const conteo = metodos.map(metodo => data.filter(v => v.metodo_pago && v.metodo_pago.toLowerCase() === metodo).length);
+        const ctx1 = document.getElementById('ventasMetodoPagoChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['Efectivo', 'Yape', 'Tarjeta', 'Transferencia'],
+                datasets: [{
+                    data: conteo,
+                    backgroundColor: colores
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    });
+
+    // Gráfico de servicios por tipo
+    $.get(`/api/reportes/servicios?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, function(data) {
+        // Agrupar por tipo de servicio (puede ser string separado por coma)
+        const tipos = {};
+        data.forEach(s => {
+            if (s.tipo_servicio) {
+                s.tipo_servicio.split(',').forEach(tipo => {
+                    const t = tipo.trim();
+                    if (t) tipos[t] = (tipos[t] || 0) + 1;
+                });
+            }
+        });
+        const labels = Object.keys(tipos).length ? Object.keys(tipos) : ['Sin tipo'];
+        const valores = Object.keys(tipos).length ? Object.values(tipos) : [0];
+        const ctx2 = document.getElementById('serviciosTipoChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cantidad',
+                    data: valores,
+                    backgroundColor: '#667eea'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    });
+}
+
+function exportarGoogleSheets() {
+    $('#googleSheetsModal').modal('show');
+}
+
+function configurarGoogleSheets() {
+    const spreadsheetId = $('#spreadsheetId').val();
+    const sheetName = $('#sheetName').val();
+    
+    if (!spreadsheetId || !sheetName) {
+        alert('Complete todos los campos');
+        return;
+    }
+    
+    // Aquí se implementaría la lógica para configurar Google Sheets
+    alert('Configuración guardada. La exportación estará disponible en la próxima versión.');
+    $('#googleSheetsModal').modal('hide');
+}
+</script>
+{% endblock %} 
